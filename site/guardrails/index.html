@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Production Guardrails Brief · Enocta AI</title>
+<style>
+@font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/fonts/hanken-grotesk-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 600; font-display: swap; src: url("assets/fonts/hanken-grotesk-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("assets/fonts/hanken-grotesk-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("assets/fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2"); }
+
+:root {
+  /* design tokens, shared with the film (guardrails-brief/build.mjs) */
+  --bg: #07090D;
+  --ink: #E6E9EF;
+  --amber: #FFB020;
+  --green: #3DDC84;
+  --fail: #FF5A5F;
+  --rgb: 230, 233, 239;
+  --card: #0b0e14;
+  --mute: rgba(var(--rgb), 0.68);
+  --faint: rgba(var(--rgb), 0.16);
+  --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --gutter: clamp(16px, 4vw, 48px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); color-scheme: dark; scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 18px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+body::before { /* the film's grid */
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(var(--rgb), 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--rgb), 0.05) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 30%, rgba(7,9,13,0) 35%, rgba(7,9,13,0.9) 100%);
+  background-size: 80px 80px, 80px 80px, 100% 100%;
+}
+.mono { font-family: var(--mono); }
+.wrap { width: min(1200px, 100% - 2 * var(--gutter)); margin-inline: auto; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 12px; top: -60px; z-index: 10; padding: 10px 14px; background: var(--ink); color: var(--bg); border-radius: 8px; font-weight: 600; text-decoration: none; }
+.skip:focus { top: 12px; }
+a:focus-visible, .badge:focus-visible, video:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+/* ---------- top bar */
+.top { padding-block: 22px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { font: 700 21px/1 var(--sans); letter-spacing: 0.02em; }
+.back { display: inline-flex; align-items: center; gap: 8px; padding: 6px 2px; color: var(--mute); font: 500 15px/1.2 var(--mono); text-decoration: none; border-bottom: 1px solid transparent; }
+.back:hover { color: var(--ink); border-bottom-color: rgba(var(--rgb), 0.5); }
+.back svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- hero */
+.hero { padding-block: clamp(24px, 5vw, 64px) clamp(40px, 6vw, 80px); }
+.hero-grid { display: grid; gap: clamp(28px, 4vw, 56px); grid-template-columns: minmax(0, 1fr); align-items: center; }
+@media screen and (min-width: 980px) { .hero-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); } }
+h1 { font: 700 clamp(36px, 5.6vw, 76px)/1.02 var(--sans); letter-spacing: -0.032em; }
+.h1l { display: block; }
+.h1l.ok { color: var(--green); }
+.rule { margin-top: 24px; max-width: 34em; font-size: clamp(18px, 1.7vw, 21px); color: var(--mute); }
+.film { position: relative; border: 1px solid rgba(var(--rgb), 0.24); border-radius: 14px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px rgba(var(--rgb), 0.04), 0 30px 80px rgba(0,0,0,0.5); }
+.film video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.print-poster { display: none; width: 100%; border-radius: 8px; }
+.tiles { list-style: none; display: grid; gap: 14px; margin-top: clamp(32px, 5vw, 56px); grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tile { border: 1px solid var(--faint); border-radius: 14px; padding: 20px 20px 18px; background: rgba(var(--rgb), 0.035); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.num { font: 500 clamp(30px, 4vw, 54px)/1 var(--mono); letter-spacing: -0.03em; white-space: nowrap; }
+.tlabel { font-size: 16px; line-height: 1.3; color: var(--ink); }
+.tnote { font-size: 13px; color: var(--mute); }
+@media screen and (max-width: 860px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- sections */
+section.block { padding-block: clamp(48px, 7vw, 100px); border-top: 1px solid var(--faint); }
+h2 { font: 700 clamp(30px, 4vw, 48px)/1.08 var(--sans); letter-spacing: -0.025em; }
+.lead { margin-top: 14px; font-size: clamp(20px, 2.2vw, 26px); font-weight: 600; letter-spacing: -0.01em; }
+.sublead { margin-top: 4px; color: var(--mute); font-size: 18px; }
+.stage { margin-top: clamp(28px, 4vw, 44px); border: 1px solid var(--faint); border-radius: 18px; padding: clamp(14px, 2.4vw, 30px); background: rgba(var(--rgb), 0.025); }
+#badge-panel { margin-top: 18px; min-height: 76px; padding: 16px 18px; border: 1px solid var(--faint); border-radius: 12px; display: flex; flex-direction: column; gap: 4px; }
+#pp-name { font-weight: 700; font-size: 19px; }
+#pp-sub { color: var(--mute); font-size: 18px; }
+#badge-panel.on #pp-sub { color: var(--ink); }
+.stack-foot { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px 28px; color: var(--mute); font-size: 17px; }
+
+/* pipeline svg */
+.pipe { width: 100%; height: auto; display: block; overflow: visible; }
+.pipe-v { display: none; max-width: 440px; margin-inline: auto; }
+@media screen and (max-width: 760px) { .pipe-h { display: none; } .pipe-v { display: block; } }
+.pipe .main { stroke: rgba(var(--rgb), 0.3); stroke-width: 3; }
+.pipe .stub { stroke: rgba(var(--rgb), 0.3); stroke-width: 2; }
+.pipe .grp { fill: rgba(var(--rgb), 0.03); stroke: rgba(var(--rgb), 0.24); stroke-width: 1.5; stroke-dasharray: 6 6; }
+.pipe .grp-lbl { fill: var(--mute); font: 500 16px var(--mono); }
+.pipe .lbl { fill: rgba(var(--rgb), 0.9); font: 500 18px var(--sans); }
+.pipe .node { fill: rgba(var(--rgb), 0.5); transition: fill 0.4s; }
+.pipe .node.learner { fill: var(--green); }
+.pipe.armed .node.learner { fill: rgba(var(--rgb), 0.5); }
+.pipe.armed .node.learner.done { fill: var(--green); }
+.pipe .model { fill: var(--card); stroke: var(--amber); stroke-width: 2.5; }
+.pipe .model-t { fill: var(--ink); font: 600 25px var(--sans); }
+.pipe .cap-amber { fill: var(--amber); font: 500 17px var(--sans); }
+.pipe .glow { fill: var(--amber); opacity: 0; filter: blur(18px); transition: opacity 0.4s; }
+.pipe .arc, .pipe .failstub { fill: none; stroke: rgba(var(--rgb), 0.45); stroke-width: 3; stroke-linecap: round; transition: stroke 0.5s; }
+.pipe .arrow { fill: rgba(var(--rgb), 0.45); transition: fill 0.5s; }
+.pipe .arc.hot, .pipe .failstub.hot { stroke: var(--fail); }
+.pipe .arrow.hot { fill: var(--fail); }
+.pipe.armed .failstub, .pipe.armed .arrow { opacity: 0; }
+.pipe.armed .failstub.hot, .pipe.armed .arrow.hot, .pipe.armed .arrow.dimmed, .pipe.armed .failstub.dimmed { opacity: 1; }
+.pipe .badge { cursor: pointer; transition: opacity 0.4s; outline: none; }
+.pipe .b-rect { fill: var(--card); stroke: rgba(var(--rgb), 0.8); stroke-width: 2; transition: stroke 0.3s, stroke-width 0.3s; }
+.pipe .b-numbg { fill: var(--ink); }
+.pipe .b-num { fill: var(--bg); font: 700 13px var(--mono); }
+.pipe .b-name { fill: var(--ink); font: 600 18px var(--sans); }
+.pipe .badge:hover .b-rect, .pipe .badge:focus-visible .b-rect { stroke: #fff; stroke-width: 3.5; }
+.pipe .badge:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
+.pipe .badge.pulse .b-rect { stroke: var(--green); }
+.pipe.armed .badge:not(.on) { opacity: 0.28; }
+.pipe .dot { fill: var(--ink); opacity: 0; transition: fill 0.25s; }
+.pipe .dot.show { opacity: 1; }
+
+/* ---------- scoreboard */
+.board { width: 100%; margin-top: clamp(24px, 3.4vw, 40px); border-collapse: collapse; }
+.board th { text-align: left; padding: 10px 16px; font: 500 13px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); border-bottom: 1px solid rgba(var(--rgb), 0.28); }
+.board td { padding: 16px; border-bottom: 1px solid rgba(var(--rgb), 0.1); font-size: 19px; vertical-align: middle; }
+.c-code { font-size: 17px; color: var(--mute); white-space: nowrap; }
+.c-guard { color: rgba(var(--rgb), 0.86); }
+.c-res { text-align: right; white-space: nowrap; }
+.stamp { display: inline-block; padding: 3px 14px; border: 2px solid var(--green); border-radius: 8px; color: var(--green); font-size: 16px; font-weight: 500; transition: opacity 0.3s, transform 0.3s cubic-bezier(.2,.9,.3,1.2); }
+.board.armed .stamp { opacity: 0; transform: scale(1.5); }
+.board.armed .stamp.in { opacity: 1; transform: none; }
+@media screen and (max-width: 760px) {
+  .board thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .board, .board tbody, .board tr, .board td { display: block; width: 100%; }
+  .board tr { padding: 16px 0; border-bottom: 1px solid rgba(var(--rgb), 0.14); }
+  .board td { padding: 3px 0; border: 0; font-size: 18px; }
+  .board td::before { content: attr(data-label); display: block; font: 500 12px/1.3 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); }
+  .c-res { text-align: left; margin-top: 8px; }
+}
+
+/* ---------- owasp */
+.ogroups { margin-top: clamp(24px, 3.4vw, 40px); display: grid; gap: 28px 48px; grid-template-columns: minmax(0, 1fr); }
+@media screen and (min-width: 980px) { .ogroups { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+.ogroup h3 { font: 500 14px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); margin-bottom: 14px; }
+.chips { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { display: inline-flex; align-items: baseline; gap: 10px; padding: 10px 14px; border: 1px solid rgba(var(--rgb), 0.34); border-radius: 10px; background: rgba(var(--rgb), 0.03); }
+.ccode { font-size: 16px; font-weight: 500; }
+.cname { font-size: 17px; color: rgba(var(--rgb), 0.86); }
+
+/* ---------- risks */
+.risks { list-style: none; margin-top: clamp(24px, 3.4vw, 40px); display: grid; gap: 16px 48px; grid-template-columns: minmax(0, 1fr); }
+@media screen and (min-width: 860px) { .risks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.risks li { display: flex; gap: 14px; align-items: flex-start; font-size: clamp(19px, 1.9vw, 22px); line-height: 1.35; padding: 16px 18px; border: 1px solid var(--faint); border-radius: 12px; background: rgba(var(--rgb), 0.025); }
+.chk { flex: none; width: 26px; height: 26px; margin-top: 1px; fill: none; stroke: var(--green); stroke-width: 1.8; }
+.chk path { stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- footer */
+footer { padding-block: clamp(48px, 7vw, 96px) 40px; border-top: 1px solid var(--faint); }
+.foot-grid { display: grid; gap: 28px 56px; grid-template-columns: minmax(0, 1fr); align-items: end; }
+@media screen and (min-width: 860px) { .foot-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } }
+.closing { font: 700 clamp(28px, 4vw, 52px)/1.08 var(--sans); letter-spacing: -0.028em; }
+.closing span { display: block; }
+.limit { font-size: 14.5px; line-height: 1.55; color: var(--mute); max-width: 36em; }
+.foot-brand { margin-top: 44px; display: flex; align-items: center; gap: 12px; font: 700 19px/1 var(--sans); letter-spacing: 0.02em; }
+.foot-brand::before { content: ""; width: 26px; height: 2px; background: rgba(var(--rgb), 0.5); }
+
+/* ---------- motion */
+.js-motion .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.7,.2,1); }
+.js-motion .reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* ---------- print: one A4 sheet, light, still */
+@media print {
+  @page { size: A4; margin: 8mm; }
+  :root { --bg: #fff; --ink: #0b0e14; --amber: #9a5b00; --green: #0b7a3b; --fail: #b3202a; --rgb: 11, 14, 20; --card: #fff; --mute: rgba(var(--rgb), 0.72); }
+  html, body { background: #fff; color-scheme: light; }
+  body { zoom: 0.54; font-size: 17px; }
+  body::before, .skip, .film, .back { display: none !important; }
+  .print-poster { display: block; }
+  .js-motion .reveal { opacity: 1 !important; transform: none !important; }
+  .pipe-h { display: block !important; } .pipe-v { display: none !important; }
+  .pipe.armed .badge:not(.on) { opacity: 1 !important; }
+  .pipe.armed .failstub, .pipe.armed .arrow { opacity: 1 !important; }
+  .pipe .arc { stroke-dashoffset: 0 !important; }
+  .pipe.armed .node.learner { fill: var(--green) !important; }
+  .board.armed .stamp { opacity: 1 !important; transform: none !important; }
+  .top { padding-block: 0 10px; } .hero { padding-block: 0 24px; }
+  .hero-grid { grid-template-columns: 1.05fr 1fr !important; gap: 28px; }
+  section.block { padding-block: 22px; } footer { padding-block: 22px 0; }
+  .stage { margin-top: 14px; padding: 12px; }
+  .tiles { margin-top: 22px; }
+  .board td { padding-block: 8px; } .board.board { margin-top: 12px; }
+  .ogroups { grid-template-columns: 1.25fr 1fr !important; margin-top: 14px; }
+  .risks { grid-template-columns: repeat(2, 1fr) !important; margin-top: 14px; gap: 10px 24px; }
+  .risks li { padding-block: 10px; }
+  .foot-brand { margin-top: 20px; }
+  #badge-panel { display: none; } .pipe .dot { display: none; }
+  section, .tile, .stage, tr, li { break-inside: avoid; }
+  /* compact so the whole brief lands on one A4 sheet */
+  section.block { padding-block: 12px; } footer { padding-block: 12px 0; }
+  .top { padding-block: 0 4px; } .hero { padding-block: 0 8px; }
+  .rule { margin-top: 12px; } .lead { margin-top: 6px; } h2 { font-size: 32px; }
+  .sublead, .stack-foot { display: none; }
+  .stage { margin-top: 8px; padding: 8px; } .tiles { margin-top: 14px; gap: 10px; }
+  .tile { padding: 10px 14px; } .num { font-size: 34px; }
+  .board td { padding-block: 4px; font-size: 16px; } .board th { padding-block: 6px; }
+  .ogroup h3 { margin-bottom: 8px; } .chip { padding: 5px 10px; }
+  .risks li { padding-block: 6px; font-size: 17px; } .risks { gap: 8px 20px; }
+  .foot-brand { margin-top: 10px; } .closing { font-size: 34px; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+
+<header class="top wrap">
+  <div class="brand">Enocta AI</div>
+  <a class="back" href="../"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>All briefs</a>
+</header>
+
+<main id="content">
+  <section class="hero wrap" aria-labelledby="h1">
+    <div class="hero-grid">
+      <div>
+        <h1 id="h1"><span class="h1l">Eight guardrails.</span> <span class="h1l">Seven test angles.</span> <span class="h1l ok">All passing.</span></h1>
+        <p class="rule">Zero trust in model output. The model generates; deterministic code enforces. Nothing reaches a learner unverified.</p>
+      </div>
+      <div class="film">
+        <video controls preload="none" playsinline poster="assets/poster.png" aria-label="Zero-trust AI. Eight guardrails. Seven test angles. All passing.">
+          <source src="assets/guardrails-brief-quiet.mp4" type="video/mp4">
+        </video>
+      </div>
+      <img class="print-poster" src="assets/poster.png" alt="Zero-trust AI. Eight guardrails. Seven test angles. All passing.">
+    </div>
+    <ul class="tiles">
+<li class="tile"><span class="num mono" data-count="8">8</span>
+<span class="tlabel">Guardrails running in production</span></li>
+<li class="tile"><span class="num mono" data-count="7" data-total="7">7 / 7</span>
+<span class="tlabel">Test angles passed</span></li>
+<li class="tile"><span class="num mono" data-count="35" data-total="35">35 / 35</span>
+<span class="tlabel">Live tests passed against the production model</span></li>
+<li class="tile"><span class="num mono" data-count="7">7</span>
+<span class="tlabel">OWASP categories mapped</span>
+<span class="tnote mono">(4 LLM + 3 Top 10:2025)</span></li>
+    </ul>
+  </section>
+
+  <section class="block" id="stack" aria-labelledby="h-stack">
+    <div class="wrap reveal">
+      <h2 id="h-stack">The guardrail stack</h2>
+      <p class="lead">The model generates. The guardrails enforce.</p>
+      <p class="sublead">A prompt is a request. A validator is a rule.</p>
+      <div class="stage">
+<svg class="pipe pipe-h" viewBox="0 0 1230 350" role="group" aria-label="The guardrail pipeline, left to right: Untrusted input, Input Gate, Spotlighting, The model, Output validators, Sanitiser / Encode-on-Output, Learner. Failed check loops back to the model: Fail-Closed Retry." xmlns="http://www.w3.org/2000/svg">
+<line class="main" x1="70" y1="246" x2="1160" y2="246"/>
+<rect class="grp" x="690" y="110" width="200" height="246" rx="16"/>
+<text class="grp-lbl" x="790" y="134" text-anchor="middle">Output validators</text>
+<rect class="grp" x="925" y="124" width="180" height="200" rx="16"/>
+<text class="grp-lbl" x="1015" y="148" text-anchor="middle">Sanitiser /</text>
+<text class="grp-lbl" x="1015" y="168" text-anchor="middle">Encode-on-Output</text>
+<circle class="node" cx="70" cy="246" r="8"/>
+<text class="lbl" x="70" y="284" text-anchor="middle">Untrusted input</text>
+<circle class="node learner" cx="1160" cy="246" r="12"/>
+<text class="lbl" x="1160" y="286" text-anchor="middle">Learner</text>
+<rect class="glow" x="470" y="210" width="150" height="72" rx="14"/>
+<rect class="model" x="470" y="210" width="150" height="72" rx="14"/>
+<text class="model-t" x="545" y="255" text-anchor="middle">The model</text>
+<text class="cap-amber" x="545" y="314" text-anchor="middle">the one untrusted component</text>
+<path class="arc" d="M790 110 C 790 22, 545 22, 545 210"/>
+<polygon class="arrow" points="533,194 557,194 545,212"/>
+<g class="badge" data-i="5" tabindex="0" role="button" aria-label="Fail-Closed Retry: Failed checks are discarded and regenerated">
+  <title>Fail-Closed Retry: Failed checks are discarded and regenerated</title>
+  <rect class="b-rect" x="567" y="33" width="200" height="46" rx="10"/>
+  <circle class="b-numbg" cx="569" cy="35" r="12"/>
+  <text class="b-num" x="569" y="40" text-anchor="middle">6</text>
+  <text class="b-name" x="667" y="62" text-anchor="middle">Fail-Closed Retry</text>
+</g>
+<g class="badge" data-i="0" tabindex="0" role="button" aria-label="Input Gate: Rejects unusable requests before any model call">
+  <title>Input Gate: Rejects unusable requests before any model call</title>
+  <rect class="b-rect" x="145" y="219" width="140" height="54" rx="10"/>
+  <circle class="b-numbg" cx="147" cy="221" r="12"/>
+  <text class="b-num" x="147" y="226" text-anchor="middle">1</text>
+  <text class="b-name" x="215" y="252" text-anchor="middle">Input Gate</text>
+</g>
+<g class="badge" data-i="1" tabindex="0" role="button" aria-label="Spotlighting: Source content is data, never instructions">
+  <title>Spotlighting: Source content is data, never instructions</title>
+  <rect class="b-rect" x="300" y="219" width="140" height="54" rx="10"/>
+  <circle class="b-numbg" cx="302" cy="221" r="12"/>
+  <text class="b-num" x="302" y="226" text-anchor="middle">2</text>
+  <text class="b-name" x="370" y="252" text-anchor="middle">Spotlighting</text>
+</g>
+<g class="badge" data-i="2" tabindex="0" role="button" aria-label="Speaker Allowlist: Only the show's voices can appear">
+  <title>Speaker Allowlist: Only the show's voices can appear</title>
+  <rect class="b-rect" x="700" y="158" width="180" height="52" rx="10"/>
+  <circle class="b-numbg" cx="702" cy="160" r="12"/>
+  <text class="b-num" x="702" y="165" text-anchor="middle">3</text>
+  <text class="b-name" x="790" y="190" text-anchor="middle">Speaker Allowlist</text>
+</g>
+<g class="badge" data-i="3" tabindex="0" role="button" aria-label="Leak-Signature Scan: No internal instructions in any output">
+  <title>Leak-Signature Scan: No internal instructions in any output</title>
+  <rect class="b-rect" x="700" y="220" width="180" height="52" rx="10"/>
+  <circle class="b-numbg" cx="702" cy="222" r="12"/>
+  <text class="b-num" x="702" y="227" text-anchor="middle">4</text>
+  <text class="b-name" x="790" y="252" text-anchor="middle">Leak-Signature Scan</text>
+</g>
+<g class="badge" data-i="4" tabindex="0" role="button" aria-label="Grounding Validators: Scripts stay on their source">
+  <title>Grounding Validators: Scripts stay on their source</title>
+  <rect class="b-rect" x="700" y="282" width="180" height="52" rx="10"/>
+  <circle class="b-numbg" cx="702" cy="284" r="12"/>
+  <text class="b-num" x="702" y="289" text-anchor="middle">5</text>
+  <text class="b-name" x="790" y="314" text-anchor="middle">Grounding Validators</text>
+</g>
+<g class="badge" data-i="6" tabindex="0" role="button" aria-label="Output Sanitiser: No active markup leaves the service">
+  <title>Output Sanitiser: No active markup leaves the service</title>
+  <rect class="b-rect" x="935" y="190" width="160" height="52" rx="10"/>
+  <circle class="b-numbg" cx="937" cy="192" r="12"/>
+  <text class="b-num" x="937" y="197" text-anchor="middle">7</text>
+  <text class="b-name" x="1015" y="222" text-anchor="middle">Output Sanitiser</text>
+</g>
+<g class="badge" data-i="7" tabindex="0" role="button" aria-label="Encode-on-Output: Markup is shown, never executed">
+  <title>Encode-on-Output: Markup is shown, never executed</title>
+  <rect class="b-rect" x="935" y="250" width="160" height="52" rx="10"/>
+  <circle class="b-numbg" cx="937" cy="252" r="12"/>
+  <text class="b-num" x="937" y="257" text-anchor="middle">8</text>
+  <text class="b-name" x="1015" y="282" text-anchor="middle">Encode-on-Output</text>
+</g>
+<circle class="dot" cx="0" cy="0" r="10"/>
+</svg>
+<svg class="pipe pipe-v" viewBox="0 0 380 1030" role="group" aria-label="The guardrail pipeline, left to right: Untrusted input, Input Gate, Spotlighting, The model, Output validators, Sanitiser / Encode-on-Output, Learner. Failed check loops back to the model: Fail-Closed Retry." xmlns="http://www.w3.org/2000/svg">
+<line class="main" x1="348" y1="40" x2="348" y2="990"/>
+<line class="stub" x1="310" y1="120" x2="348" y2="120"/>
+<line class="stub" x1="310" y1="196" x2="348" y2="196"/>
+<line class="stub" x1="310" y1="285" x2="348" y2="285"/>
+<line class="stub" x1="310" y1="452" x2="348" y2="452"/>
+<line class="stub" x1="310" y1="514" x2="348" y2="514"/>
+<line class="stub" x1="310" y1="576" x2="348" y2="576"/>
+<line class="stub" x1="310" y1="836" x2="348" y2="836"/>
+<line class="stub" x1="310" y1="892" x2="348" y2="892"/>
+<rect class="grp" x="40" y="382" width="280" height="236" rx="16"/>
+<text class="grp-lbl" x="180" y="408" text-anchor="middle">Output validators</text>
+<rect class="grp" x="40" y="760" width="280" height="176" rx="16"/>
+<text class="grp-lbl" x="180" y="786" text-anchor="middle">Sanitiser / Encode-on-Output</text>
+<circle class="node" cx="348" cy="40" r="7"/>
+<text class="lbl" x="318" y="46" text-anchor="end">Untrusted input</text>
+<circle class="node learner" cx="348" cy="990" r="11"/>
+<text class="lbl" x="318" y="996" text-anchor="end">Learner</text>
+<rect class="glow" x="50" y="250" width="260" height="70" rx="14"/>
+<rect class="model" x="50" y="250" width="260" height="70" rx="14"/>
+<text class="model-t" x="180" y="294" text-anchor="middle">The model</text>
+<text class="cap-amber" x="180" y="346" text-anchor="middle">the one untrusted component</text>
+<path class="failstub" d="M348 690 H310"/>
+<path class="arc" d="M50 690 C 8 690, 8 285, 50 285"/>
+<polygon class="arrow" points="34,273 34,297 50,285"/>
+<g class="badge" data-i="5" tabindex="0" role="button" aria-label="Fail-Closed Retry: Failed checks are discarded and regenerated">
+  <title>Fail-Closed Retry: Failed checks are discarded and regenerated</title>
+  <rect class="b-rect" x="50" y="667" width="260" height="46" rx="10"/>
+  <circle class="b-numbg" cx="52" cy="669" r="12"/>
+  <text class="b-num" x="52" y="674" text-anchor="middle">6</text>
+  <text class="b-name" x="180" y="696" text-anchor="middle">Fail-Closed Retry</text>
+</g>
+<g class="badge" data-i="0" tabindex="0" role="button" aria-label="Input Gate: Rejects unusable requests before any model call">
+  <title>Input Gate: Rejects unusable requests before any model call</title>
+  <rect class="b-rect" x="50" y="95" width="260" height="50" rx="10"/>
+  <circle class="b-numbg" cx="52" cy="97" r="12"/>
+  <text class="b-num" x="52" y="102" text-anchor="middle">1</text>
+  <text class="b-name" x="180" y="126" text-anchor="middle">Input Gate</text>
+</g>
+<g class="badge" data-i="1" tabindex="0" role="button" aria-label="Spotlighting: Source content is data, never instructions">
+  <title>Spotlighting: Source content is data, never instructions</title>
+  <rect class="b-rect" x="50" y="171" width="260" height="50" rx="10"/>
+  <circle class="b-numbg" cx="52" cy="173" r="12"/>
+  <text class="b-num" x="52" y="178" text-anchor="middle">2</text>
+  <text class="b-name" x="180" y="202" text-anchor="middle">Spotlighting</text>
+</g>
+<g class="badge" data-i="2" tabindex="0" role="button" aria-label="Speaker Allowlist: Only the show's voices can appear">
+  <title>Speaker Allowlist: Only the show's voices can appear</title>
+  <rect class="b-rect" x="58" y="427" width="244" height="50" rx="10"/>
+  <circle class="b-numbg" cx="60" cy="429" r="12"/>
+  <text class="b-num" x="60" y="434" text-anchor="middle">3</text>
+  <text class="b-name" x="180" y="458" text-anchor="middle">Speaker Allowlist</text>
+</g>
+<g class="badge" data-i="3" tabindex="0" role="button" aria-label="Leak-Signature Scan: No internal instructions in any output">
+  <title>Leak-Signature Scan: No internal instructions in any output</title>
+  <rect class="b-rect" x="58" y="489" width="244" height="50" rx="10"/>
+  <circle class="b-numbg" cx="60" cy="491" r="12"/>
+  <text class="b-num" x="60" y="496" text-anchor="middle">4</text>
+  <text class="b-name" x="180" y="520" text-anchor="middle">Leak-Signature Scan</text>
+</g>
+<g class="badge" data-i="4" tabindex="0" role="button" aria-label="Grounding Validators: Scripts stay on their source">
+  <title>Grounding Validators: Scripts stay on their source</title>
+  <rect class="b-rect" x="58" y="551" width="244" height="50" rx="10"/>
+  <circle class="b-numbg" cx="60" cy="553" r="12"/>
+  <text class="b-num" x="60" y="558" text-anchor="middle">5</text>
+  <text class="b-name" x="180" y="582" text-anchor="middle">Grounding Validators</text>
+</g>
+<g class="badge" data-i="6" tabindex="0" role="button" aria-label="Output Sanitiser: No active markup leaves the service">
+  <title>Output Sanitiser: No active markup leaves the service</title>
+  <rect class="b-rect" x="58" y="811" width="244" height="50" rx="10"/>
+  <circle class="b-numbg" cx="60" cy="813" r="12"/>
+  <text class="b-num" x="60" y="818" text-anchor="middle">7</text>
+  <text class="b-name" x="180" y="842" text-anchor="middle">Output Sanitiser</text>
+</g>
+<g class="badge" data-i="7" tabindex="0" role="button" aria-label="Encode-on-Output: Markup is shown, never executed">
+  <title>Encode-on-Output: Markup is shown, never executed</title>
+  <rect class="b-rect" x="58" y="867" width="244" height="50" rx="10"/>
+  <circle class="b-numbg" cx="60" cy="869" r="12"/>
+  <text class="b-num" x="60" y="874" text-anchor="middle">8</text>
+  <text class="b-name" x="180" y="898" text-anchor="middle">Encode-on-Output</text>
+</g>
+<circle class="dot" cx="0" cy="0" r="9"/>
+</svg>
+      </div>
+      <div id="badge-panel" aria-live="polite"><span id="pp-name"></span><span id="pp-sub">Hover or tap a badge to read its guarantee.</span></div>
+      <div class="stack-foot"><span>Failed check loops back to the model: Fail-Closed Retry.</span><span>Policy as code, not policy as prompt.</span></div>
+    </div>
+  </section>
+
+  <section class="block" id="tested" aria-labelledby="h-tested">
+    <div class="wrap reveal">
+      <h2 id="h-tested">Tested from seven angles</h2>
+      <table class="board">
+        <thead><tr><th scope="col">Test angle</th>
+<th scope="col">OWASP LLM</th>
+<th scope="col">Guardrail</th>
+<th scope="col">Result</th></tr></thead>
+        <tbody>
+<tr><td class="c-angle" data-label="Test angle">Script inside a model answer</td>
+<td class="c-code mono" data-label="OWASP LLM">LLM05</td>
+<td class="c-guard" data-label="Guardrail">Output Sanitiser</td>
+<td class="c-res" data-label="Result"><span class="stamp mono">PASSED</span></td></tr>
+<tr><td class="c-angle" data-label="Test angle">Encoded (Base64) payload</td>
+<td class="c-code mono" data-label="OWASP LLM">LLM05</td>
+<td class="c-guard" data-label="Guardrail">Output Sanitiser</td>
+<td class="c-res" data-label="Result"><span class="stamp mono">PASSED</span></td></tr>
+<tr><td class="c-angle" data-label="Test angle">Markup inside a generated exam question</td>
+<td class="c-code mono" data-label="OWASP LLM">LLM05</td>
+<td class="c-guard" data-label="Guardrail">Encode-on-Output</td>
+<td class="c-res" data-label="Result"><span class="stamp mono">PASSED</span></td></tr>
+<tr><td class="c-angle" data-label="Test angle">Instructions hidden in source content</td>
+<td class="c-code mono" data-label="OWASP LLM">LLM01</td>
+<td class="c-guard" data-label="Guardrail">Spotlighting</td>
+<td class="c-res" data-label="Result"><span class="stamp mono">PASSED</span></td></tr>
+<tr><td class="c-angle" data-label="Test angle">System prompt extraction</td>
+<td class="c-code mono" data-label="OWASP LLM">LLM07</td>
+<td class="c-guard" data-label="Guardrail">Leak-Signature Scan</td>
+<td class="c-res" data-label="Result"><span class="stamp mono">PASSED</span></td></tr>
+<tr><td class="c-angle" data-label="Test angle">Unauthorised speakers in a script</td>
+<td class="c-code mono" data-label="OWASP LLM">LLM01</td>
+<td class="c-guard" data-label="Guardrail">Speaker Allowlist</td>
+<td class="c-res" data-label="Result"><span class="stamp mono">PASSED</span></td></tr>
+<tr><td class="c-angle" data-label="Test angle">Off-source or self-referential content</td>
+<td class="c-code mono" data-label="OWASP LLM">LLM09</td>
+<td class="c-guard" data-label="Guardrail">Grounding and Meta-Content Validators</td>
+<td class="c-res" data-label="Result"><span class="stamp mono">PASSED</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block" id="owasp" aria-labelledby="h-owasp">
+    <div class="wrap reveal">
+      <h2 id="h-owasp">Mapped to OWASP</h2>
+      <div class="ogroups">
+<div class="ogroup"><h3 class="mono">LLM Top 10 (2025)</h3>
+<ul class="chips"><li class="chip"><span class="ccode mono">LLM01</span> <span class="cname">Prompt Injection</span></li>
+<li class="chip"><span class="ccode mono">LLM05</span> <span class="cname">Improper Output Handling</span></li>
+<li class="chip"><span class="ccode mono">LLM07</span> <span class="cname">System Prompt Leakage</span></li>
+<li class="chip"><span class="ccode mono">LLM09</span> <span class="cname">Misinformation</span></li></ul></div>
+<div class="ogroup"><h3 class="mono">OWASP Top 10:2025</h3>
+<ul class="chips"><li class="chip"><span class="ccode mono">A05</span> <span class="cname">Injection</span></li>
+<li class="chip"><span class="ccode mono">A06</span> <span class="cname">Insecure Design</span></li>
+<li class="chip"><span class="ccode mono">A10</span> <span class="cname">Mishandling of Exceptional Conditions</span></li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="risks" aria-labelledby="h-risks">
+    <div class="wrap reveal">
+      <h2 id="h-risks">Risks we do not carry</h2>
+      <ul class="risks">
+<li><svg class="chk" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 12.5l3.8 3.8 7.2-7.6"/></svg><span>A learner's browser will not run code the model wrote.</span></li>
+<li><svg class="chk" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 12.5l3.8 3.8 7.2-7.6"/></svg><span>Our system prompts do not leave the service.</span></li>
+<li><svg class="chk" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 12.5l3.8 3.8 7.2-7.6"/></svg><span>Uploaded content cannot take control of what a learner hears.</span></li>
+<li><svg class="chk" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 12.5l3.8 3.8 7.2-7.6"/></svg><span>A podcast cannot quietly drift off its source.</span></li>
+<li><svg class="chk" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 12.5l3.8 3.8 7.2-7.6"/></svg><span>A failed check never ships.</span></li>
+<li><svg class="chk" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 12.5l3.8 3.8 7.2-7.6"/></svg><span>Our safety does not depend on the model behaving.</span></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap reveal">
+    <div class="foot-grid">
+      <p class="closing">Deterministic by design. Fail-closed by default.</p>
+      <p class="limit">No model can be guaranteed never to be misled. We engineer for blast-radius containment: if the model is misled, the result does not reach a learner.</p>
+    </div>
+    <div class="foot-brand">Enocta AI</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var BADGES = [{"short":"Input Gate","full":"Input Gate","sub":"Rejects unusable requests before any model call"},{"short":"Spotlighting","full":"Spotlighting","sub":"Source content is data, never instructions"},{"short":"Speaker Allowlist","full":"Speaker Allowlist","sub":"Only the show's voices can appear"},{"short":"Leak-Signature Scan","full":"Leak-Signature Scan","sub":"No internal instructions in any output"},{"short":"Grounding Validators","full":"Grounding and Meta-Content Validators","sub":"Scripts stay on their source"},{"short":"Fail-Closed Retry","full":"Fail-Closed Retry","sub":"Failed checks are discarded and regenerated"},{"short":"Output Sanitiser","full":"Output Sanitiser","sub":"No active markup leaves the service"},{"short":"Encode-on-Output","full":"Encode-on-Output","sub":"Markup is shown, never executed"}];
+  var ROUTES = {"h":[{"p":[70,246]},{"mv":[215,246],"d":900},{"lock":0},{"mv":[370,246],"d":800},{"lock":1},{"mv":[545,246],"d":800},{"col":"amber"},{"glow":1},{"wait":900},{"glow":0},{"mv":[690,246],"d":600},{"mv":[790,184],"d":450},{"lock":2},{"mv":[790,246],"d":400},{"lock":3},{"mv":[790,308],"d":400},{"lock":4},{"col":"fail"},{"shake":1},{"wait":350},{"arcStart":1},{"mv":[790,110],"d":500},{"lock":5},{"arc":1,"d":1100},{"mv":[545,246],"d":300},{"arcDim":1},{"col":"amber"},{"glow":1},{"wait":800},{"glow":0},{"mv":[690,246],"d":600},{"col":"green"},{"mv":[790,246],"d":450},{"pulse":[2,3,4]},{"mv":[910,246],"d":450},{"mv":[1015,216],"d":500},{"lock":6},{"mv":[1015,276],"d":400},{"lock":7},{"mv":[1160,246],"d":700},{"learner":1}],"v":[{"p":[348,40]},{"mv":[348,120],"d":800},{"lock":0},{"mv":[348,196],"d":700},{"lock":1},{"mv":[348,285],"d":700},{"col":"amber"},{"glow":1},{"wait":900},{"glow":0},{"mv":[348,452],"d":700},{"lock":2},{"mv":[348,514],"d":450},{"lock":3},{"mv":[348,576],"d":450},{"lock":4},{"col":"fail"},{"shake":1},{"wait":350},{"mv":[348,690],"d":450},{"arcStart":1},{"mv":[310,690],"d":200},{"lock":5},{"mv":[50,690],"d":600},{"arc":1,"d":1100},{"mv":[180,285],"d":350},{"arcDim":1},{"col":"amber"},{"glow":1},{"wait":800},{"glow":0},{"mv":[310,285],"d":300},{"mv":[348,285],"d":150},{"col":"green"},{"mv":[348,452],"d":600},{"pulse":[2,3,4]},{"mv":[348,576],"d":500},{"mv":[348,836],"d":700},{"lock":6},{"mv":[348,892],"d":450},{"lock":7},{"mv":[348,990],"d":700},{"learner":1}]};
+  var C = { ink: "#E6E9EF", amber: "#FFB020", green: "#3DDC84", fail: "#FF5A5F" };
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var still = reduce || location.hash === "#static";
+  var doc = document.documentElement;
+  if (!still) doc.classList.add("js-motion");
+
+  /* ---- guarantee panel (works with mouse, keyboard, touch) */
+  var panel = document.getElementById("badge-panel");
+  var ppName = document.getElementById("pp-name");
+  var ppSub = document.getElementById("pp-sub");
+  function show(i) {
+    var b = BADGES[i];
+    ppName.textContent = b.full;
+    ppSub.textContent = b.sub;
+    panel.classList.add("on");
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".badge"), function (g) {
+    var i = +g.getAttribute("data-i");
+    g.addEventListener("mouseenter", function () { show(i); });
+    g.addEventListener("focus", function () { show(i); });
+    g.addEventListener("focusin", function () { show(i); });
+    g.addEventListener("click", function () { show(i); });
+    g.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(i); } });
+  });
+
+  /* ---- helpers */
+  var ease = function (t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  function tween(ms, fn) {
+    return new Promise(function (resolve) {
+      var t0 = performance.now();
+      (function step(now) {
+        var p = Math.min(1, (now - t0) / ms);
+        fn(p);
+        if (p < 1) requestAnimationFrame(step); else resolve();
+      })(t0);
+    });
+  }
+  function observeOnce(el, cb, threshold) {
+    if (!("IntersectionObserver" in window)) { cb(); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { io.disconnect(); cb(); } });
+    }, { threshold: threshold || 0.2 });
+    io.observe(el);
+  }
+
+  /* ---- reveal on scroll */
+  Array.prototype.forEach.call(document.querySelectorAll(".reveal"), function (el) {
+    if (still) return;
+    observeOnce(el, function () { el.classList.add("in"); }, 0.08);
+  });
+
+  /* ---- hero count-up */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-count]"), function (el) {
+    if (still) return;
+    var target = +el.getAttribute("data-count");
+    var total = el.getAttribute("data-total");
+    var fmt = function (n) { return total ? n + " / " + total : String(n); };
+    el.textContent = fmt(0);
+    tween(1200, function (p) { el.textContent = fmt(Math.round(target * ease(Math.min(1, p * 1.0)))); }).then(function () { el.textContent = fmt(target); });
+  });
+
+  /* ---- scoreboard: PASSED stamps land one by one */
+  var board = document.querySelector(".board");
+  if (board && !still) {
+    board.classList.add("armed");
+    observeOnce(board, function () {
+      Array.prototype.forEach.call(board.querySelectorAll(".stamp"), function (s, i) {
+        setTimeout(function () { s.classList.add("in"); }, 250 + i * 330);
+      });
+    }, 0.25);
+  }
+
+  /* ---- pipeline: one packet, one fail-closed retry loop, once on scroll */
+  function visible(svg) { return getComputedStyle(svg).display !== "none"; }
+  function runPipe(svg, route) {
+    var dot = svg.querySelector(".dot"), arc = svg.querySelector(".arc"), arrow = svg.querySelector(".arrow");
+    var stub = svg.querySelector(".failstub"), glow = svg.querySelector(".glow"), learner = svg.querySelector(".learner");
+    var badges = svg.querySelectorAll(".badge");
+    var L = arc.getTotalLength();
+    var pos = route[0].p.slice();
+    var setPos = function (x, y) { pos = [x, y]; dot.setAttribute("transform", "translate(" + x + " " + y + ")"); };
+    setPos(pos[0], pos[1]);
+    dot.classList.add("show");
+    dot.style.fill = C.ink;
+    function pick(i) { return svg.querySelector('.badge[data-i="' + i + '"]'); }
+    return (async function () {
+      await sleep(500);
+      for (var k = 1; k < route.length; k++) {
+        var s = route[k];
+        if (s.mv) {
+          var a = pos.slice(), b = s.mv;
+          await tween(s.d, function (p) { var e = ease(p); setPos(a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e); });
+        } else if (s.lock !== undefined) { pick(s.lock).classList.add("on"); }
+        else if (s.col) { dot.style.fill = C[s.col]; await sleep(120); }
+        else if (s.glow !== undefined) { glow.style.opacity = s.glow ? 0.55 : 0; }
+        else if (s.wait) { await sleep(s.wait); }
+        else if (s.shake) {
+          var base = pos.slice();
+          await tween(260, function (p) { setPos(base[0] + Math.sin(p * Math.PI * 6) * 6 * (1 - p), base[1]); });
+          setPos(base[0], base[1]);
+        } else if (s.arcStart) {
+          arc.classList.add("hot"); arrow.classList.add("hot"); if (stub) stub.classList.add("hot");
+          tween(600, function (p) { arc.style.strokeDashoffset = L * (1 - ease(p)); });
+        } else if (s.arc) {
+          await tween(s.d, function (p) { var pt = arc.getPointAtLength(L * ease(p)); setPos(pt.x, pt.y); });
+        } else if (s.arcDim) {
+          arc.classList.remove("hot"); arrow.classList.remove("hot"); if (stub) stub.classList.remove("hot");
+          arrow.classList.add("dimmed"); if (stub) stub.classList.add("dimmed");
+        } else if (s.pulse) {
+          s.pulse.forEach(function (i) { var g = pick(i); g.classList.add("pulse"); setTimeout(function () { g.classList.remove("pulse"); }, 380); });
+        } else if (s.learner) { learner.classList.add("done"); }
+      }
+    })();
+  }
+  if (!still) {
+    var pipes = [["h", ".pipe-h"], ["v", ".pipe-v"]];
+    var stage = document.querySelector(".stage");
+    pipes.forEach(function (pr) {
+      var svg = document.querySelector(pr[1]);
+      if (!svg) return;
+      svg.classList.add("armed");
+      var arc = svg.querySelector(".arc");
+      var L = 0; try { L = arc.getTotalLength(); } catch (e) { L = 0; }
+      arc.style.strokeDasharray = L; arc.style.strokeDashoffset = L;
+    });
+    observeOnce(stage, function () {
+      var svg = visible(document.querySelector(".pipe-h")) ? document.querySelector(".pipe-h") : document.querySelector(".pipe-v");
+      var key = svg.classList.contains("pipe-h") ? "h" : "v";
+      runPipe(svg, ROUTES[key]).then(function () {
+        pipes.forEach(function (pr) { /* leave the other layout in its finished state */
+          var other = document.querySelector(pr[1]);
+          if (other !== svg) {
+            other.querySelectorAll(".badge").forEach(function (g) { g.classList.add("on"); });
+            other.querySelector(".learner").classList.add("done");
+            other.querySelector(".arc").style.strokeDashoffset = 0;
+            var ar = other.querySelector(".arrow"); ar.classList.add("dimmed");
+            var st = other.querySelector(".failstub"); if (st) st.classList.add("dimmed");
+          }
+        });
+      });
+    }, 0.35);
+  }
+})();
+</script>
+</body>
+</html>
