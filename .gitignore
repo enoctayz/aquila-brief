@@ -38,3 +38,21 @@ desktop.ini
 .aider-desk/
 .claude/settings.local.json
 skills-lock.json
+
+
+# Local scratch and generated output
+smoke/
+guardrails-brief/out/
+guardrails-brief/.hyperframes/
+guardrails-brief/.thumbnails/
+guardrails-brief/.waveform-cache/
+guardrails-brief/audio/src/
+guardrails-brief/assets/audio/
+site-src/screenshots/
+
+
+# Sources and scratch stay local; only site/ is published
+content/
+site-src/
+guardrails-brief/
+smoke/
