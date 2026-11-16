@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="description" content="We fine-tuned an open-source Turkish TTS model on voices from our own course content">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACMElEQVR42mOQkJBiQMICQLpBQkLqvISE1H8q4/NQswWQ7US2PEFCQuo9DSxGx++hdqE4IIEOFqPjBJgDBOjkc2whIcAAjZf/A4QbGGiU4IhOmAwDaDkYjzqALAfIysr9j4qK/n/w4MH/O3bs/B8eHvFfRkaO9g4AWVJbW/v/1atX/z98+PD//fv3/588eQLGd+/e+5+Wlk47B3h6ev1/9OgR2GIYfv36NdwBILxr1y7aOKC9vR3FYhC+fPkyiuUgHBQUQn0HzJo1C8XiN2/e/E9JSf3f2NiEYvnevXupnwbKyspRLH/27Nl/U1NzcKJ7/Pgx3PJr167/V1ZWpa4DdHX1wYkM2edGRib/U1PTUHx+7tz5/+rqmtTPhgsXLkLxfVJSMljczc3j/8OHD8GWL1iw4L+srDxOwx0dnf47ODiS54Bbt27BLb927RqKnIKC4n81NQ28Bnd0dMJDCZReSHYAKKhfvHj5/927d/8TEhJxGqCkpPI/NjYebCGyOChdwBwAyjEkO0BaWvb/zZs3ofl79/+SktL/YWHh/0NCQsG5oL+////Zs2dR0oOZmTnWEGhoaCQvF4AsRM/r+PCyZctQ9NvbO/y3s3OgrBxYunQZ0Q4AZU1CaYNkB0hKSv+vqqr+/+DBA6IckZiYRJu6QE5O/r+/f8D/KVOm/j916vT/+/chDrp37/7/48ePg9MEqL6QkpIZbZCQ7IABb5QOeLN8wDsmA941GxSd0wHrngMALfgzKe7kgmwAAAAASUVORK5CYII=">
+<link rel="icon" type="image/png" sizes="48x48" href="../assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-touch-icon.png">
+<title>Fine-tuning FreyaTTS on Enocta voices</title>
+<style>
+@view-transition { navigation: auto; }
+.film { view-transition-name: brief-film; }
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 600; font-display: swap; src: url("assets/fonts/poppins-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 600; font-display: swap; src: url("assets/fonts/poppins-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 700; font-display: swap; src: url("assets/fonts/poppins-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 700; font-display: swap; src: url("assets/fonts/poppins-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 800; font-display: swap; src: url("assets/fonts/poppins-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 800; font-display: swap; src: url("assets/fonts/poppins-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/fonts/inter-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/fonts/inter-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("assets/fonts/inter-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("assets/fonts/inter-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("assets/fonts/inter-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("assets/fonts/inter-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 400; font-display: swap; src: url("assets/fonts/inter-latin-400-italic.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 400; font-display: swap; src: url("assets/fonts/inter-latin-ext-400-italic.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/fonts/jetbrains-mono-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("assets/fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("assets/fonts/jetbrains-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+
+:root {
+  /* colour tokens: the film's theme (freya-tts-film/build.mjs), sampled from the PDF */
+  --crimson: #CB1F47;
+  --ink: #18181A;
+  --tint: #FBF1F3;
+  --deep: #971627;
+  --deep2: #85131C;
+  --pink: #F4A9BA;
+  --pink-lt: #FFD3DD;
+  --paper: #FFFFFF;
+  --grey: #85858C;
+  --grey2: #4A4A50;
+  --grey3: #CFCCD2;
+  --line: #D9D6DA;
+  --panel: #27272B;
+  --head: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --track: #EFE9EB;
+  --soft: #F3F1F4;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--paper); scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { background: var(--paper); color: var(--ink); font: 400 17px/1.55 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 3px solid var(--crimson); outline-offset: 3px; }
+.panel :focus-visible { outline-color: var(--pink); }
+.skip { position: absolute; left: 12px; top: -64px; z-index: 10; padding: 10px 16px; background: #fff; color: var(--ink); border-radius: 8px; font-weight: 600; text-decoration: none; box-shadow: 0 2px 12px rgba(0,0,0,.3); }
+.skip:focus { top: 12px; }
+.arrow { flex: none; display: inline-block; color: var(--crimson); }
+/* drawn "≤" (the fonts have no such glyph): sized in em so it scales with the text around it */
+.le { flex: none; display: inline-block; vertical-align: -.12em; width: .6em; height: .8em; margin: 0 .2em 0 0; color: var(--crimson); }
+
+/* ---------- page: dark panel left, light content right ---------- */
+.page { display: grid; grid-template-columns: minmax(0, 1fr); }
+@media screen and (min-width: 1100px) {
+  .page { grid-template-columns: clamp(400px, 32vw, 580px) minmax(0, 1fr); min-height: 100vh; }
+}
+
+/* ---------- dark panel ---------- */
+.panel { background: var(--ink); color: #fff; padding: clamp(22px, 4vw, 44px); container-type: inline-size; }
+.back { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 22px; padding: 4px 0; color: var(--grey3); font: 500 13px/1.2 var(--mono); letter-spacing: .04em; text-decoration: none; border-bottom: 1px solid transparent; }
+.back:hover { color: #fff; border-bottom-color: rgba(255,255,255,.5); }
+.back svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.brand { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.logo { display: block; width: 104px; height: auto; }
+.tag { font: 500 13px/1.2 var(--mono); letter-spacing: .12em; color: var(--pink); }
+.eyebrow { margin-top: 34px; font: 500 13px/1.5 var(--mono); letter-spacing: .08em; color: var(--grey3); overflow-wrap: anywhere; }
+h1 { margin-top: 12px; font: 700 clamp(32px, 3.5vw, 48px)/1.08 var(--head); letter-spacing: -.02em; }
+h1 .crimson { display: block; color: var(--crimson); }
+.sub { margin-top: 18px; font-size: 17px; line-height: 1.55; color: var(--grey3); max-width: 46ch; }
+.stats { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 26px; }
+.stats li { display: flex; align-items: baseline; gap: 6px 14px; padding: 14px 18px; border: 1px solid rgba(255,255,255,.22); border-radius: 12px; background: var(--panel); }
+.stats .v { flex: none; min-width: 4.3em; font: 800 clamp(24px, 2.2vw, 30px)/1.1 var(--head); letter-spacing: -.02em; color: #fff; white-space: nowrap; }
+.stats .k { min-width: 0; font-size: 14px; line-height: 1.35; color: var(--grey3); white-space: nowrap; }
+@container (max-width: 300px) { .stats li { flex-wrap: wrap; } .stats .k { white-space: normal; } }
+/* desktop: the panel content stays in view while the right column scrolls; only when it is shorter than the window (otherwise it scrolls with the page) */
+.panel-in { position: relative; }
+@media screen and (min-width: 1100px) and (min-height: 820px) { .panel-in { position: sticky; top: clamp(24px, 6vh, 56px); } }
+
+/* ---------- light content ---------- */
+.main { padding: clamp(20px, 3.6vw, 44px); display: flex; flex-direction: column; gap: clamp(36px, 5vw, 56px); max-width: 1120px; container-type: inline-size; }
+.sec-h { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 18px; font: 700 clamp(24px, 2.6vw, 30px)/1.2 var(--head); letter-spacing: -.01em; }
+
+/* film */
+.film { position: relative; border-radius: 16px; overflow: hidden; background: var(--ink); aspect-ratio: 16 / 9; }
+.film video { display: block; width: 100%; height: 100%; object-fit: cover; background: var(--ink); }
+.play { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; border: 0; background: rgba(24,24,26,.12); cursor: pointer; }
+.play span { display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; background: var(--crimson); transition: transform .2s; }
+.play:hover span { transform: scale(1.06); }
+.play svg { width: 30px; height: 30px; margin-left: 5px; fill: #fff; }
+.play:focus-visible { outline: 3px solid #fff; outline-offset: -8px; }
+.play.off { display: none; }
+.cap { margin-top: 10px; font: 400 14px/1.4 var(--mono); color: var(--grey2); }
+.cap span + span::before { content: "·"; margin: 0 .35em 0 .15em; }
+
+/* how FreyaTTS works: four steps, the DiT step dark, "random noise" feeding into it from above */
+.flow { list-style: none; display: flex; align-items: stretch; padding-top: 92px; }
+.flow > li { display: flex; align-items: stretch; flex: 1 1 0; min-width: 0; position: relative; }
+.flow > li.dit { flex-grow: 1.25; }
+.node { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 16px 14px; background: var(--tint); border: 1.5px solid var(--pink-lt); border-radius: 14px; }
+.node .name { font: 600 clamp(16px, 1.3vw, 18px)/1.25 var(--head); }
+.node .sub2 { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; font-size: 14.5px; line-height: 1.4; color: var(--grey2); }
+.node.dit { background: var(--ink); border-color: var(--ink); color: #fff; padding: 22px 16px; box-shadow: 0 6px 18px rgba(24,24,26,.28); }
+.node.dit .name { font-size: clamp(20px, 1.8vw, 24px); }
+.node.dit .sub2 { color: var(--pink-lt); font-size: 15px; }
+.flow .arrow { align-self: center; width: 30px; height: auto; margin: 0 4px; }
+.node.dit .arrow { width: 24px; margin: 0; }
+.noise { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.noise .chip { padding: 5px 16px; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; font-size: 15px; line-height: 1.35; color: var(--grey2); white-space: nowrap; }
+.noise .arrow { width: 16px; height: auto; margin: 0; }
+.caption { margin-top: 22px; max-width: 62ch; font: 500 clamp(17px, 1.5vw, 19px)/1.5 var(--body); color: var(--grey2); }
+@container (max-width: 700px) {
+  .flow { flex-direction: column; padding-top: 0; }
+  .flow > li { flex-direction: column; width: 100%; }
+  .flow > li.dit { flex-grow: 1; }
+  .flow .arrow { transform: rotate(90deg); margin: 10px auto; }
+  .node.dit .arrow, .flow .noise .arrow { transform: none; margin: 0; }
+  .noise { position: static; transform: none; margin: 4px 0 8px; }
+}
+
+/* data pipeline: five steps as a narrowing funnel */
+.funnel { list-style: none; position: relative; display: flex; align-items: center; height: 250px; }
+.funnel::before { content: ""; position: absolute; inset: 0; background: var(--tint); clip-path: polygon(0 0, 100% 22%, 100% 78%, 0 100%); z-index: 0; }
+.fn-li { position: relative; z-index: 1; display: flex; align-items: center; flex: 1 1 0; min-width: 0; height: 100%; }
+.fn { flex: 1; min-width: 0; height: calc(var(--k) * 100%); display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 14px 14px; background: #fff; border: 1.5px solid var(--pink-lt); border-radius: 14px; }
+.fn .fig { font: 800 clamp(24px, 2.4vw, 32px)/1.1 var(--head); letter-spacing: -.02em; color: var(--crimson); white-space: nowrap; }
+.fn .lab { font-size: 15px; line-height: 1.35; color: var(--grey2); }
+.fn.end { background: var(--ink); border-color: var(--ink); }
+.fn.end .fig { color: #fff; }
+.fn.end .lab { color: var(--pink-lt); }
+.funnel .arrow { width: 24px; height: auto; margin: 0 3px; }
+@container (max-width: 700px) {
+  .funnel { flex-direction: column; height: auto; gap: 0; padding: 0; }
+  .funnel::before { display: none; }
+  .fn-li { flex-direction: column; width: 100%; height: auto; }
+  .fn { flex: none; width: calc(var(--k) * 100%); height: auto; align-self: center; text-align: center; align-items: center; }
+  .funnel .arrow { transform: rotate(90deg); margin: 8px 0; }
+}
+
+/* experiments */
+.xps { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@container (min-width: 900px) { .xps { grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr); align-items: start; } }
+.xp { border: 1.5px solid var(--line); border-radius: 18px; padding: 22px 24px 24px; background: var(--soft); }
+.xp.best { background: var(--tint); border-color: var(--crimson); }
+.xp-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px 16px; }
+.xp-ico { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--grey2); color: #fff; }
+.xp.best .xp-ico { background: var(--crimson); }
+.xp-ico svg { width: 30px; height: 30px; fill: currentColor; }
+.xp-lab { font: 500 13px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--grey2); }
+.xp.best .xp-lab { color: var(--deep); }
+.xp-title { font: 700 clamp(20px, 1.9vw, 24px)/1.2 var(--head); letter-spacing: -.01em; }
+.xp-fig { text-align: right; }
+.xp-fig .big { display: block; font: 800 clamp(34px, 3.2vw, 44px)/1 var(--head); letter-spacing: -.02em; white-space: nowrap; }
+.xp-fig .sm { display: block; margin-top: 2px; font-size: 14px; line-height: 1.3; color: var(--grey2); }
+@container (max-width: 520px) { .xp-head { grid-template-columns: auto minmax(0, 1fr); } .xp-fig { grid-column: 1 / -1; text-align: left; } }
+.xp ul.bul { list-style: none; margin-top: 18px; display: grid; gap: 10px; }
+.xp ul.bul > li { position: relative; padding-left: 20px; font-size: 17px; line-height: 1.5; }
+.xp ul.bul > li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 8px; height: 8px; border-radius: 50%; background: var(--crimson); }
+/* the honest limit: clearly readable, never small print */
+.callout { display: block; margin-top: 8px; padding: 10px 18px 12px; border-radius: 14px; background: var(--crimson); color: #fff; font: 700 clamp(22px, 2.2vw, 28px)/1.25 var(--head); letter-spacing: -.01em; }
+.samples { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--pink-lt); }
+.s-h { font: 500 13px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--deep); }
+.players { list-style: none; display: grid; gap: 10px; margin-top: 10px; }
+.player { background: #fff; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.player audio { display: block; width: 100%; }
+.p-ui { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px 14px; }
+.p-ui[hidden] { display: none; }
+.p-btn { grid-row: 1 / span 2; display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--crimson); color: #fff; cursor: pointer; transition: transform .15s, background .15s; }
+.p-btn:hover { transform: scale(1.06); background: var(--deep); }
+.p-btn svg { width: 22px; height: 22px; fill: currentColor; }
+.p-btn .i-play { margin-left: 3px; }
+.p-btn .i-pause { display: none; }
+.player.on .p-btn .i-play { display: none; }
+.player.on .p-btn .i-pause { display: block; }
+.player.on { border-color: var(--crimson); }
+.p-lab { grid-column: 2; grid-row: 1; font: 600 clamp(15px, 1.3vw, 17px)/1.3 var(--head); }
+.p-time { grid-column: 3; grid-row: 1; font: 400 14px/1.3 var(--mono); color: var(--grey2); font-variant-numeric: tabular-nums; }
+.p-bar { grid-column: 2 / -1; grid-row: 2; display: block; height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+.p-bar i { display: block; height: 100%; width: 100%; border-radius: 4px; background: var(--crimson); transform-origin: 0 50%; transform: scaleX(0); }
+
+/* hardware: tried and next, joined by an arrow */
+.hw { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 14px; }
+.hw-c { align-self: stretch; padding: 20px 22px 18px; border: 1.5px solid var(--line); border-radius: 18px; background: var(--soft); }
+.hw-c.next { background: var(--tint); border-color: var(--pink-lt); }
+.hw-h { display: flex; align-items: center; gap: 12px; font: 700 clamp(18px, 1.7vw, 22px)/1.25 var(--head); }
+.hw-h svg { flex: none; width: 32px; height: 24px; color: var(--grey2); }
+.hw-c.next .hw-h svg { color: var(--crimson); }
+.hw-rows { list-style: none; margin-top: 10px; }
+.hw-rows li { display: grid; grid-template-columns: minmax(84px, 40%) minmax(0, 1fr); align-items: center; gap: 4px 14px; padding: 10px 0; border-top: 1px solid var(--line); }
+.hw-rows li:first-child { border-top: 0; }
+.hw-fig { display: flex; align-items: center; font: 800 clamp(24px, 2.4vw, 32px)/1.1 var(--head); letter-spacing: -.02em; white-space: nowrap; }
+.hw-lab { font-size: 16px; line-height: 1.4; color: var(--grey2); }
+.hw .join { display: grid; place-items: center; }
+.hw .join .arrow { width: 44px; height: auto; }
+@container (max-width: 760px) {
+  .hw { grid-template-columns: minmax(0, 1fr); }
+  .hw .join .arrow { transform: rotate(90deg); margin: 8px 0; }
+}
+
+.cite { max-width: 70ch; font-size: 16px; line-height: 1.6; color: var(--grey2); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ---------- print: landscape A4, one page, laid out like the PDF ---------- */
+@page { size: A4 landscape; margin: 0; }
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { width: 297mm; height: 210mm; overflow: hidden; font-size: 9px; line-height: 1.35; }
+  .skip, .film-sec, .back { display: none !important; }
+  .page { display: block; width: 297mm; height: 210mm; min-height: 0; }
+  .panel { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo eyebrow stats" "logo title stats" "logo sub stats"; align-items: center; gap: 2px 18px; padding: 12px 22px; zoom: 1.15; }
+  .panel-in { display: contents; position: static; }
+  .panel > *, .panel-in > * { margin: 0; }
+  .brand { grid-area: logo; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .logo { width: 70px; }
+  .tag { font-size: 8px; }
+  .eyebrow { grid-area: eyebrow; font-size: 8px; margin: 0; }
+  h1 { grid-area: title; font-size: 24px; margin: 0; }
+  h1 .crimson { display: inline; }
+  .sub { grid-area: sub; margin: 0; font-size: 10px; max-width: none; }
+  .stats { grid-area: stats; display: flex; gap: 6px; margin: 0; }
+  .stats li { flex-direction: column; align-items: flex-start; gap: 0; padding: 5px 9px; border-radius: 7px; }
+  .stats .v { min-width: 0; font-size: 17px; }
+  .stats .k { font-size: 8px; }
+  .main { display: grid; grid-template-columns: 1fr 1.1fr; grid-template-rows: auto auto auto; gap: 8px 22px; padding: 10px 22px; max-width: none; container-type: normal; zoom: 1.3; }
+  .sec-h .arrow { width: 22px; }
+  .main > section { min-width: 0; }
+  .sec-h { margin-bottom: 5px; font-size: 12.5px; gap: 5px 6px; }
+  .sec-how { grid-column: 1; grid-row: 1; }
+  .sec-pipe { grid-column: 1; grid-row: 2; }
+  .sec-src { grid-column: 1; grid-row: 3; }
+  .sec-exp { grid-column: 2; grid-row: 1 / span 2; }
+  .sec-hw { grid-column: 2; grid-row: 3; }
+  .flow { padding-top: 38px; }
+  .flow .arrow { width: 12px; margin: 0 1px; }
+  .node { padding: 6px 6px; gap: 1px; border-radius: 7px; }
+  .node .name { font-size: 9.5px; }
+  .node .sub2 { font-size: 7.5px; gap: 0 3px; }
+  .node.dit { padding: 9px 7px; box-shadow: none; }
+  .node.dit .name { font-size: 12px; }
+  .node.dit .sub2 { font-size: 7.5px; }
+  .node.dit .arrow { width: 10px; }
+  .noise { margin-bottom: 3px; }
+  .noise .chip { padding: 2px 8px; font-size: 8px; }
+  .noise .arrow { width: 9px; }
+  .caption { margin-top: 6px; max-width: none; font-size: 8.5px; }
+  .funnel { height: 112px; }
+  .fn { padding: 5px 6px; border-radius: 6px; gap: 1px; }
+  .fn .fig { font-size: 13px; }
+  .fn .lab { font-size: 7.3px; }
+  .funnel .arrow { width: 9px; margin: 0 1px; }
+  .xps { grid-template-columns: 1fr; gap: 8px; }
+  .xp { padding: 9px 11px 10px; border-radius: 9px; }
+  .xp-head { grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 9px; }
+  .xp-ico { width: 26px; height: 26px; }
+  .xp-ico svg { width: 15px; height: 15px; }
+  .xp-lab { font-size: 7px; }
+  .xp-title { font-size: 11.5px; }
+  .xp-fig .big { font-size: 20px; }
+  .xp-fig .sm { font-size: 7.5px; }
+  .xp ul.bul { margin-top: 6px; gap: 3px; }
+  .xp ul.bul > li { font-size: 8.8px; padding-left: 11px; }
+  .xp ul.bul > li::before { width: 5px; height: 5px; }
+  .callout { margin-top: 3px; padding: 3px 9px 4px; font-size: 12px; border-radius: 6px; }
+  .samples { margin-top: 6px; padding-top: 5px; }
+  .s-h { font-size: 7px; }
+  .players { grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+  .player { padding: 5px 7px; border-radius: 6px; }
+  .player audio, .p-btn, .p-bar, .p-time { display: none !important; }
+  .p-ui { display: block !important; }
+  .p-ui[hidden] { display: block !important; }
+  .p-lab { font-size: 8.3px; }
+  .hw { grid-template-columns: 1fr auto 1fr; gap: 6px; }
+  .hw-c { padding: 8px 10px 6px; border-radius: 9px; }
+  .hw-h { font-size: 10px; gap: 6px; }
+  .hw-h svg { width: 18px; height: 14px; }
+  .hw-rows { margin-top: 3px; }
+  .hw-rows li { grid-template-columns: 62px 1fr; padding: 3px 0; gap: 2px 7px; }
+  .hw-fig { font-size: 14px; }
+  .hw-lab { font-size: 7.6px; }
+  .hw .join .arrow { width: 22px; transform: none; margin: 0; }
+  .cite { font-size: 7.8px; line-height: 1.4; max-width: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="page">
+
+  <header class="panel"><div class="panel-in">
+    <a class="back" href="../"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>All briefs</a>
+    <div class="brand">
+      <img class="logo" src="assets/enocta-logo.png" alt="Enocta" width="415" height="255">
+      <span class="tag">TECHNICAL BRIEF</span>
+    </div>
+    <p class="eyebrow">SPEECH SYNTHESIS · FINE-TUNING</p>
+    <h1>Fine-tuning FreyaTTS <span class="crimson">on Enocta voices</span></h1>
+    <p class="sub">We fine-tuned an open-source Turkish TTS model on voices from our own course content</p>
+    <ul class="stats">
+      <li><span class="v">183M</span>
+<span class="k">parameters</span></li>
+      <li><span class="v">32</span>
+<span class="k">flow-matching steps</span></li>
+      <li><span class="v">48 kHz</span>
+<span class="k">audio output</span></li>
+    </ul>
+  </div></header>
+
+  <main class="main" id="main">
+
+    <section class="film-sec" aria-labelledby="h-film">
+      <h2 class="sr" id="h-film">Film</h2>
+      <div class="film">
+        <button class="play" type="button" aria-label="Play film"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l16 9-16 9z"/></svg></span></button>
+        <video id="film" controls preload="none" playsinline poster="assets/poster.png" width="1920" height="1080">
+          <source src="assets/freya-tts.mp4" type="video/mp4">
+          Your browser cannot play this video.
+        </video>
+      </div>
+      <p class="cap"><span>Film</span>
+<span>1:49</span></p>
+    </section>
+
+    <section class="sec-how" aria-labelledby="h-how">
+      <h2 class="sec-h" id="h-how">How FreyaTTS works</h2>
+      <ol class="flow" id="flow">
+        <li><div class="node"><span class="name">Turkish text</span>
+<span class="sub2">92 characters, no phonemes</span></div><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span></li>
+        <li><div class="node"><span class="name">Text encoder</span>
+<span class="sub2">+ duration predictor</span></div><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span></li>
+        <li class="dit"><div class="noise"><span class="chip">random noise</span><svg class="arrow down" aria-hidden="true" width="23" height="40" viewBox="0 0 32 56"><path d="M16 3V47M4 35L16 49L28 35" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span></div>
+<div class="node dit"><span class="name">DiT × 16</span>
+<span class="sub2"><span>noise</span><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span>
+<span>speech in 32 steps</span></span></div><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span></li>
+        <li><div class="node"><span class="name">AudioVAE2</span>
+<span class="sub2">decodes to 48 kHz audio</span></div></li>
+      </ol>
+      <p class="caption">Flow matching: the transformer learns to turn random noise into speech, guided by the text.</p>
+    </section>
+
+    <section class="sec-pipe" aria-labelledby="h-pipe">
+      <h2 class="sec-h" id="h-pipe">Our data pipeline</h2>
+      <ol class="funnel">
+        <li class="fn-li"><div class="fn" style="--k:1.0"><span class="fig">11,429</span>
+<span class="lab">course items with a transcript</span></div><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span></li>
+        <li class="fn-li"><div class="fn" style="--k:0.9"><span class="fig">4,424</span>
+<span class="lab">with audio (from videos)</span></div><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span></li>
+        <li class="fn-li"><div class="fn" style="--k:0.8"><span class="fig">4,408</span>
+<span class="lab">single narrator items</span></div><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span></li>
+        <li class="fn-li"><div class="fn" style="--k:0.7"><span class="fig">179</span>
+<span class="lab">speaker clusters</span></div><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span></li>
+        <li class="fn-li"><div class="fn end" style="--k:0.6"><span class="fig">1–14 s</span>
+<span class="lab">aligned sentence clips</span></div></li>
+      </ol>
+    </section>
+
+    <section class="sec-exp" aria-labelledby="h-exp">
+      <h2 class="sec-h" id="h-exp">Experiments</h2>
+      <div class="xps">
+        <article class="xp" aria-labelledby="h-xp1">
+          <div class="xp-head">
+            <span class="xp-ico" aria-hidden="true"><svg viewBox="0 0 60 60"><circle cx="30" cy="20" r="11"/><path d="M8 54C8 40 18 33 30 33C42 33 52 40 52 54Z"/></svg></span>
+            <div><p class="xp-lab">Experiment 1</p>
+<h3 class="xp-title" id="h-xp1">Single speaker: Mehmet Auf</h3></div>
+            <p class="xp-fig"><span class="big">2.4 h</span>
+<span class="sm">1,785 clips</span></p>
+          </div>
+          <ul class="bul">
+            <li>Best: step 4,000 (10k steps overfit: shaky voice)</li>
+            <li>Stumbles on rare words (64% of words appear once)</li>
+            <li>Effectively voice cloning: one model per person</li>
+          </ul>
+        </article>
+        <article class="xp best" aria-labelledby="h-xp2">
+          <div class="xp-head">
+            <span class="xp-ico" aria-hidden="true"><svg viewBox="0 0 96 56"><circle cx="48" cy="14" r="9"/><path d="M30 50C30 38 38 32 48 32C58 32 66 38 66 50Z"/><circle cx="18" cy="21" r="7" opacity=".8"/><path d="M4 50C4 41 10 36 18 36C22 36 25 37 27 39C25 42 24 46 24 50Z" opacity=".8"/><circle cx="78" cy="21" r="7" opacity=".8"/><path d="M92 50C92 41 86 36 78 36C74 36 71 37 69 39C71 42 72 46 72 50Z" opacity=".8"/></svg></span>
+            <div><p class="xp-lab">Experiment 2</p>
+<h3 class="xp-title" id="h-xp2">Multi-speaker model</h3></div>
+            <p class="xp-fig"><span class="big">~104 h</span>
+<span class="sm">5 speakers · ~84k clips</span></p>
+          </div>
+          <ul class="bul">
+            <li>Added a speaker embedding: one model, many voices</li>
+            <li><span>Best: step 3,000,</span> <strong class="callout">our best so far, not yet perfect</strong></li>
+          </ul>
+          <div class="samples">
+            <h4 class="s-h">Samples</h4>
+            <ul class="players">
+            <li class="player" data-player>
+              <audio id="p1-a" controls preload="none"><source src="assets/step-1000.wav" type="audio/wav">Your browser cannot play this audio.</audio>
+              <div class="p-ui" hidden>
+                <button class="p-btn" type="button" aria-labelledby="p1-act p1-lab" data-play="Play" data-pause="Pause"><svg class="i-play" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 3.5l15 8.5-15 8.5z"/></svg><svg class="i-pause" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></svg><span class="sr" id="p1-act">Play</span></button>
+                <span class="p-lab" id="p1-lab">Step 1,000 · 10% of data seen</span>
+                <span class="p-bar" role="progressbar" aria-labelledby="p1-lab" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></span>
+                <span class="p-time">0:03</span>
+              </div>
+            </li>
+            <li class="player" data-player>
+              <audio id="p2-a" controls preload="none"><source src="assets/step-3000.wav" type="audio/wav">Your browser cannot play this audio.</audio>
+              <div class="p-ui" hidden>
+                <button class="p-btn" type="button" aria-labelledby="p2-act p2-lab" data-play="Play" data-pause="Pause"><svg class="i-play" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 3.5l15 8.5-15 8.5z"/></svg><svg class="i-pause" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></svg><span class="sr" id="p2-act">Play</span></button>
+                <span class="p-lab" id="p2-lab">Step 3,000 · 30% of data seen</span>
+                <span class="p-bar" role="progressbar" aria-labelledby="p2-lab" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></span>
+                <span class="p-time">0:03</span>
+              </div>
+            </li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="sec-hw" aria-labelledby="h-hw">
+      <h2 class="sec-h" id="h-hw"><span>Hardware: what we tried</span><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span>
+<span>what we'll try</span></h2>
+      <div class="hw">
+        <article class="hw-c tried" aria-labelledby="h-t">
+          <h3 class="hw-h" id="h-t"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="9" y="4" width="46" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="5"/><path d="M2 42H62" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg><span>Tried: 16 GB laptop</span></h3>
+          <ul class="hw-rows">
+            <li><span class="hw-fig">8</span>
+<span class="hw-lab">batch size</span></li>
+            <li><span class="hw-fig">~30%</span>
+<span class="hw-lab">of the data seen</span></li>
+            <li><span class="hw-fig"><svg class="le" aria-hidden="true" viewBox="0 0 24 32"><path d="M19 3L5 13L19 23M5 29H19" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> at most </span>
+<span>36 h</span></span>
+<span class="hw-lab">per training run</span></li>
+          </ul>
+        </article>
+        <div class="join"><svg class="arrow" aria-hidden="true" width="40" height="23" viewBox="0 0 56 32"><path d="M3 16H48M36 4L50 16L36 28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> to </span></div>
+        <article class="hw-c next" aria-labelledby="h-n">
+          <h3 class="hw-h" id="h-n"><svg viewBox="0 0 64 48" aria-hidden="true"><path d="M8 40A26 26 0 1 1 56 40" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M32 38L44 16" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="38" r="4" fill="currentColor"/></svg><span>Next: GPU</span></h3>
+          <ul class="hw-rows">
+            <li><span class="hw-fig">64</span>
+<span class="hw-lab">batch (Freya's recipe)</span></li>
+            <li><span class="hw-fig">~100%</span>
+<span class="hw-lab">of data (~1,300 steps)</span></li>
+            <li><span class="hw-fig">Stage 2</span>
+<span class="hw-lab">short-phrase training, as in the Freya paper</span></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="sec-src" aria-labelledby="h-src">
+      <h2 class="sec-h" id="h-src">Source</h2>
+      <p class="cite">Pamuk et al., &quot;FreyaTTS: A Compact Tokenizer-Free Flow-Matching Transformer for Turkish-First Speech Synthesis&quot;, arXiv:2607.09530, 2026</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  var d = document;
+  var v = d.getElementById("film"), pb = d.querySelector(".play");
+  var players = [].slice.call(d.querySelectorAll("[data-player]")).map(function (el) {
+    var a = el.querySelector("audio"), ui = el.querySelector(".p-ui"), btn = el.querySelector(".p-btn"), act = el.querySelector(".p-btn .sr"), bar = el.querySelector(".p-bar"), fill = el.querySelector(".p-bar i");
+    return { el: el, a: a, ui: ui, btn: btn, act: act, bar: bar, fill: fill };
+  });
+  function pauseOthers(except) {
+    players.forEach(function (p) { if (p !== except && !p.a.paused) p.a.pause(); });
+    if (except && v && !v.paused) v.pause();
+  }
+  function paint(p) {
+    var dur = p.a.duration, frac = dur && isFinite(dur) ? Math.min(1, p.a.currentTime / dur) : 0;
+    p.fill.style.transform = "scaleX(" + frac + ")";
+    p.bar.setAttribute("aria-valuenow", String(Math.round(frac * 100)));
+  }
+  function state(p) {
+    var on = !p.a.paused;
+    p.el.classList.toggle("on", on);
+    p.act.textContent = on ? p.btn.getAttribute("data-pause") : p.btn.getAttribute("data-play");
+  }
+  players.forEach(function (p) {
+    // the custom button and bar replace the native controls (which stay if scripts do not run)
+    p.a.removeAttribute("controls"); p.a.style.display = "none"; p.ui.hidden = false;
+    var raf = 0;
+    function tick() { paint(p); if (!p.a.paused) raf = requestAnimationFrame(tick); }
+    p.btn.addEventListener("click", function () {
+      if (p.a.paused) { var pr = p.a.play(); if (pr && pr.catch) pr.catch(function () { state(p); }); } else { p.a.pause(); }
+    });
+    p.a.addEventListener("play", function () { pauseOthers(p); state(p); cancelAnimationFrame(raf); tick(); });
+    p.a.addEventListener("pause", function () { state(p); paint(p); });
+    p.a.addEventListener("ended", function () { p.a.currentTime = 0; state(p); paint(p); });
+  });
+  // film: no autoplay; the overlay button is a big "play" over the poster. Starting the film pauses both samples.
+  if (v && pb) {
+    pb.addEventListener("click", function () { var p = v.play(); if (p && p.catch) p.catch(function () { pb.classList.remove("off"); }); v.focus(); });
+    v.addEventListener("play", function () { pb.classList.add("off"); players.forEach(function (p) { if (!p.a.paused) p.a.pause(); }); });
+    v.addEventListener("ended", function () { pb.classList.remove("off"); });
+  }
+})();
+</script>
+</body>
+</html>

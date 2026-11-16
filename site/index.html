@@ -42,7 +42,7 @@
   --maxw: 2000px; /* content never gets wider than this: on bigger screens the side padding grows instead */
   --pad: max(clamp(18px, 3.2vw, 48px), calc((100vw - var(--maxw)) / 2));
   --gap: clamp(32px, 4.5vw, 80px);
-  --n: 4;
+  --n: 5;
   --len: 27;
   --dim: #9B9AA2; /* dimmed rows: AA (4.8:1) even over the strongest part of the glow */
 }
@@ -109,7 +109,7 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
   .index { --colw: calc((100cqw - var(--gap)) / 2 - 64px); --rowh: calc(100cqh / var(--n));
     --ts: clamp(22px, min(96px, calc(var(--colw) / (0.5 * var(--len))), calc((100cqh / 3 - 64px) / 1.1)), 96px);
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(var(--n), minmax(0, 1fr)); height: 100%; gap: 0 var(--gap); }
-  body[data-tier="b"] .index { --ts: clamp(20px, min(44px, calc(var(--colw) / (0.5 * var(--len))), calc((100cqh / 6 - 60px) / 1.25)), 44px); }
+  body[data-tier="b"] .index { --ts: clamp(20px, min(44px, calc(var(--colw) / (0.5 * var(--len))), calc((100cqh / 6 - 60px) / 1.25), calc((var(--rowh) - 112px) / 1.2)), 44px); }
   body[data-tier="c"] .index { --ts: clamp(26px, 2.6vw, 40px); }
   .item { display: contents; }
   .row { grid-column: 1; align-self: stretch; align-content: center; padding: 0 0 0 26px; border-top: 1px solid rgba(255,255,255,.12); color: var(--dim); transition: color .35s ease; }
@@ -150,7 +150,7 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 /* ---------- motion (skipped entirely with prefers-reduced-motion) ---------- */
 @media (prefers-reduced-motion: no-preference) {
   body::before { animation: glow 26s ease-in-out infinite alternate; }
-  .track { animation: scroll 210s linear infinite; }
+  .track { animation: scroll 250s linear infinite; }
   .marquee:hover .track { animation-play-state: paused; }
   .logo, .count { animation: fade .45s ease both; }
   .item .row { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.25s + var(--i) * .6s / var(--n)); }
@@ -183,19 +183,42 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 <body data-mode="stage" data-tier="b">
 <header class="top">
   <img class="logo" src="assets/enocta-logo.png" alt="Enocta" width="415" height="255">
-  <p class="count"><span class="n">04</span> <span>briefs</span></p>
+  <p class="count"><span class="n">05</span> <span>briefs</span></p>
 </header>
 <main class="showcase">
   <h1 class="sr">Enocta AI · Briefs</h1>
   <ul class="index" role="list">
     <li class="item" role="listitem" style="--i:0">
-      <a class="row is-active" href="jev-ats/" aria-current="true" aria-describedby="sum-jev-ats" data-slug="jev-ats">
+      <a class="row is-active" href="freya-tts/" aria-current="true" aria-describedby="sum-freya-tts" data-slug="freya-tts">
         <span class="idx">01</span>
+        <span class="title">Enocta Voices</span>
+        <span class="sr">Fine-tuning FreyaTTS on Enocta voices</span>
+        <span class="tag">SPEECH SYNTHESIS · FINE-TUNING</span>
+      </a>
+      <a class="panel is-active intro" href="freya-tts/" tabindex="-1" aria-hidden="true" data-slug="freya-tts">
+        <span class="frame">
+          <video muted loop playsinline preload="none" poster="assets/cards/freya-tts.jpg" width="960" height="540">
+            <source src="assets/previews/freya-tts.mp4" type="video/mp4">
+          </video>
+        </span>
+        <span class="cap">
+          <span class="full">Fine-tuning FreyaTTS on Enocta voices</span>
+          <span class="summary" id="sum-freya-tts">One model, many voices.</span>
+          <span class="meta">
+            <span class="filmlen"><span>Film</span> <span class="dur">1:49</span></span>
+            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+          </span>
+        </span>
+      </a>
+    </li>
+    <li class="item" role="listitem" style="--i:1">
+      <a class="row" href="jev-ats/" aria-describedby="sum-jev-ats" data-slug="jev-ats">
+        <span class="idx">02</span>
         <span class="title">Typed Resume Screening</span>
         <span class="sr">Screening resumes with typed answers</span>
         <span class="tag">TYPED JUDGMENT · RESUME SCREENING</span>
       </a>
-      <a class="panel is-active intro" href="jev-ats/" tabindex="-1" aria-hidden="true" data-slug="jev-ats">
+      <a class="panel" href="jev-ats/" tabindex="-1" aria-hidden="true" data-slug="jev-ats">
         <span class="frame">
           <video muted loop playsinline preload="none" poster="assets/cards/jev-ats.jpg" width="960" height="540">
             <source src="assets/previews/jev-ats.mp4" type="video/mp4">
@@ -211,9 +234,9 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:1">
+    <li class="item" role="listitem" style="--i:2">
       <a class="row" href="shorts/" aria-describedby="sum-shorts" data-slug="shorts">
-        <span class="idx">02</span>
+        <span class="idx">03</span>
         <span class="title">Enocta Shorts</span>
         <span class="sr">Turning courses into vertical shorts</span>
         <span class="tag">AGENTIC VIDEO REFRAMING · SHORTS</span>
@@ -234,16 +257,16 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:2">
+    <li class="item" role="listitem" style="--i:3">
       <a class="row" href="turkish-ai/" aria-describedby="sum-turkish-ai" data-slug="turkish-ai">
-        <span class="idx">03</span>
+        <span class="idx">04</span>
         <span class="title">Distilled LLM for <span class="nb">Role-Play</span></span>
         <span class="sr">Distilling a Turkish role-play model</span>
         <span class="tag">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
       </a>
       <a class="panel" href="turkish-ai/" tabindex="-1" aria-hidden="true" data-slug="turkish-ai">
         <span class="frame">
-          <video muted loop playsinline preload="none" poster="assets/cards/turkish-ai.jpg" width="960" height="540">
+          <video muted loop playsinline preload="none" data-poster="assets/cards/turkish-ai.jpg" width="960" height="540">
             <source src="assets/previews/turkish-ai.mp4" type="video/mp4">
           </video>
         </span>
@@ -257,9 +280,9 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:3">
+    <li class="item" role="listitem" style="--i:4">
       <a class="row" href="guardrails/" aria-describedby="sum-guardrails" data-slug="guardrails">
-        <span class="idx">04</span>
+        <span class="idx">05</span>
         <span class="title">Production Guardrails</span>
         <span class="sr">Production Guardrails Brief</span>
         <span class="tag">Zero-trust AI</span>
@@ -285,6 +308,12 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 <div class="marquee" aria-hidden="true">
   <div class="track">
 <div class="half">
+<span class="mi n">Enocta Voices</span>
+<i class="dot"></i>
+<span class="mi t">SPEECH SYNTHESIS · FINE-TUNING</span>
+<i class="dot"></i>
+<span class="mi">One model, many voices.</span>
+<i class="dot"></i>
 <span class="mi n">Typed Resume Screening</span>
 <i class="dot"></i>
 <span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
@@ -308,6 +337,12 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 <span class="mi t">Zero-trust AI</span>
 <i class="dot"></i>
 <span class="mi">Eight guardrails. Seven test angles. All passing.</span>
+<i class="dot"></i>
+<span class="mi n">Enocta Voices</span>
+<i class="dot"></i>
+<span class="mi t">SPEECH SYNTHESIS · FINE-TUNING</span>
+<i class="dot"></i>
+<span class="mi">One model, many voices.</span>
 <i class="dot"></i>
 <span class="mi n">Typed Resume Screening</span>
 <i class="dot"></i>
@@ -335,6 +370,12 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 <i class="dot"></i>
 </div>
 <div class="half">
+<span class="mi n">Enocta Voices</span>
+<i class="dot"></i>
+<span class="mi t">SPEECH SYNTHESIS · FINE-TUNING</span>
+<i class="dot"></i>
+<span class="mi">One model, many voices.</span>
+<i class="dot"></i>
 <span class="mi n">Typed Resume Screening</span>
 <i class="dot"></i>
 <span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
@@ -358,6 +399,12 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 <span class="mi t">Zero-trust AI</span>
 <i class="dot"></i>
 <span class="mi">Eight guardrails. Seven test angles. All passing.</span>
+<i class="dot"></i>
+<span class="mi n">Enocta Voices</span>
+<i class="dot"></i>
+<span class="mi t">SPEECH SYNTHESIS · FINE-TUNING</span>
+<i class="dot"></i>
+<span class="mi">One model, many voices.</span>
 <i class="dot"></i>
 <span class="mi n">Typed Resume Screening</span>
 <i class="dot"></i>
