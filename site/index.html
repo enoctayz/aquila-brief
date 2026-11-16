@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="dark">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23CB1F47%22%2F%3E%3Ccircle%20cx%3D%2222%22%20cy%3D%2221%22%20r%3D%224%22%20fill%3D%22%23fff%22%2F%3E%3C%2Fsvg%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACMElEQVR42mOQkJBiQMICQLpBQkLqvISE1H8q4/NQswWQ7US2PEFCQuo9DSxGx++hdqE4IIEOFqPjBJgDBOjkc2whIcAAjZf/A4QbGGiU4IhOmAwDaDkYjzqALAfIysr9j4qK/n/w4MH/O3bs/B8eHvFfRkaO9g4AWVJbW/v/1atX/z98+PD//fv3/588eQLGd+/e+5+Wlk47B3h6ev1/9OgR2GIYfv36NdwBILxr1y7aOKC9vR3FYhC+fPkyiuUgHBQUQn0HzJo1C8XiN2/e/E9JSf3f2NiEYvnevXupnwbKyspRLH/27Nl/U1NzcKJ7/Pgx3PJr167/V1ZWpa4DdHX1wYkM2edGRib/U1PTUHx+7tz5/+rqmtTPhgsXLkLxfVJSMljczc3j/8OHD8GWL1iw4L+srDxOwx0dnf47ODiS54Bbt27BLb927RqKnIKC4n81NQ28Bnd0dMJDCZReSHYAKKhfvHj5/927d/8TEhJxGqCkpPI/NjYebCGyOChdwBwAyjEkO0BaWvb/zZs3ofl79/+SktL/YWHh/0NCQsG5oL+////Zs2dR0oOZmTnWEGhoaCQvF4AsRM/r+PCyZctQ9NvbO/y3s3OgrBxYunQZ0Q4AZU1CaYNkB0hKSv+vqqr+/+DBA6IckZiYRJu6QE5O/r+/f8D/KVOm/j916vT/+/chDrp37/7/48ePg9MEqL6QkpIZbZCQ7IABb5QOeLN8wDsmA941GxSd0wHrngMALfgzKe7kgmwAAAAASUVORK5CYII=">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/icons/favicon-48.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
 <title>Enocta AI · Briefs</title>
 <style>
 @font-face { font-family: "Poppins"; font-style: normal; font-weight: 700; font-display: swap; src: url("assets/fonts/poppins-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
@@ -73,6 +75,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
 .row { order: 1; position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "idx title" ". tag"; column-gap: 16px; row-gap: 12px; align-content: start; padding: 20px 20px 0; color: #fff; }
 .idx { grid-area: idx; align-self: start; padding-top: .9em; font: 500 14px/1 var(--mono); color: var(--pink); }
 .title { grid-area: title; font: 700 clamp(26px, 7.4vw, 40px)/1.08 var(--head); letter-spacing: -.02em; text-wrap: balance; }
+/* tiers b and c: at most two lines, then an ellipsis (the full title stays in the DOM, so the link's accessible name is complete);
+   tier a (1-3 briefs) is sized so that the longest title fits without clamping */
+body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; line-height: 1.2; }
 .tag { grid-area: tag; font: 500 13px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--pink); overflow-wrap: anywhere; }
 @media (max-width: 520px) { .tag { letter-spacing: .03em; } }
 .cap { order: 2; display: flex; flex-direction: column; gap: 14px; padding: 14px 20px 22px; }
@@ -82,7 +87,6 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
 .dur { color: #fff; }
 .open { display: inline-flex; align-items: center; gap: 8px; color: var(--pink); }
 .open svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform .25s ease; }
-.cursor { display: none; }
 
 /* ---------- marquee: tags and summaries, crimson dots ---------- */
 .marquee { overflow: hidden; border-top: 1px solid rgba(255,255,255,.12); padding: 13px 0; background: var(--ink); position: sticky; bottom: 0; }
@@ -100,8 +104,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
   body { height: 100vh; height: 100dvh; overflow: hidden; }
   .showcase { container-type: size; padding: 0 var(--pad) 22px; }
   .index { --colw: calc((100cqw - var(--gap)) / 2 - 64px); --rowh: calc(100cqh / var(--n));
-    --ts: clamp(22px, min(96px, calc((var(--rowh) - 44px) / 3.1), calc(var(--colw) * 4.3 / var(--len))), 96px);
+    --ts: clamp(40px, min(96px, calc(var(--colw) * 4.3 / var(--len)), calc((100cqh / 3 - 36px) / 3.1)), 96px);
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(var(--n), minmax(0, 1fr)); height: 100%; gap: 0 var(--gap); }
+  body[data-tier="b"] .index { --ts: clamp(22px, min(44px, calc((100cqh / 6 - 44px) / 2.5), 2.8vw), 44px); }
+  body[data-tier="c"] .index { --ts: clamp(26px, 2.6vw, 40px); }
   .item { display: contents; }
   .row { grid-column: 1; align-self: stretch; align-content: center; padding: 0 0 0 26px; border-top: 1px solid rgba(255,255,255,.12); color: var(--dim); transition: color .35s ease; }
   .item:first-child .row { border-top: 0; }
@@ -110,6 +116,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
   .row.is-active::before { transform: scaleY(1); }
   .idx { color: var(--dim); transition: color .35s ease; padding-top: calc(var(--ts) * .2); }
   .title { font-size: var(--ts); line-height: 1.04; }
+  body[data-tier="b"] .title, body[data-tier="c"] .title { line-height: 1.2; }
   .tag { color: var(--dim); transition: color .35s ease; }
   .row.is-active .idx, .row.is-active .tag { color: var(--pink); }
 
@@ -125,12 +132,17 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
   .marquee { position: relative; background: rgba(24,24,26,.55); }
   .marquee::before { background: linear-gradient(90deg, rgba(24,24,26,.9), rgba(24,24,26,0)); }
   .marquee::after { background: linear-gradient(270deg, rgba(24,24,26,.9), rgba(24,24,26,0)); }
-  .has-cursor .panel.is-active { cursor: none; }
-  .cursor { display: block; position: fixed; left: 0; top: 0; z-index: 5; pointer-events: none; }
-  .cursor span { display: grid; place-items: center; width: 78px; height: 78px; margin: -39px 0 0 -39px; border-radius: 50%; background: var(--crimson); color: #fff; font: 500 13px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; opacity: 0; transform: scale(.5); transition: opacity .25s ease, transform .3s cubic-bezier(.2,.8,.2,1); }
-  .cursor.on span { opacity: 1; transform: scale(1); }
+  /* 7 or more briefs: normal scrolling list on the left, sticky stage on the right, the row nearest the middle is active.
+     The last grid row is empty space: it lets the final row reach the middle and keeps the stage sticky to the very end. */
+  body[data-mode="scroll"] { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; overflow-x: hidden; }
+  body[data-mode="scroll"] .showcase { container-type: normal; padding: 0 var(--pad); }
+  body[data-mode="scroll"] .index { container-type: inline-size; grid-template-rows: repeat(var(--n), auto) 46vh; grid-template-rows: repeat(var(--n), auto) 46dvh; height: auto; }
+  body[data-mode="scroll"] .row { min-height: 20vh; min-height: 20dvh; padding-block: 18px; }
+  body[data-mode="scroll"] .panel { position: sticky; align-self: start; justify-self: stretch; width: 100%; --pw: calc((100cqw - var(--gap)) / 2); top: max(16px, calc((100vh - 42px - var(--pw) * 9 / 16 - 130px) / 2)); top: max(16px, calc((100dvh - 42px - var(--pw) * 9 / 16 - 130px) / 2)); }
+  body[data-mode="scroll"] .marquee { position: sticky; bottom: 0; }
+  .frame { transition: box-shadow .25s ease; }
+  .panel:hover .frame { box-shadow: 0 30px 80px -30px rgba(0,0,0,.85), 0 0 0 2px var(--crimson); }
 }
-@media (hover: none), (pointer: coarse) { .cursor { display: none !important; } .has-cursor .panel.is-active { cursor: auto; } }
 
 /* ---------- motion (skipped entirely with prefers-reduced-motion) ---------- */
 @media (prefers-reduced-motion: no-preference) {
@@ -150,7 +162,6 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
 @keyframes scalein { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .cursor { display: none !important; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }
 
@@ -158,7 +169,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
 @media print {
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   html, body { background: #fff; color: #18181A; height: auto; overflow: visible; display: block; }
-  body::before, body::after, .marquee, .cursor, .frame { display: none !important; }
+  body::before, body::after, .marquee, .frame { display: none !important; }
   .top { padding: 0 0 12px; } .logo { filter: invert(1); }
   .count { color: #4A4A50; } .count .n { color: #18181A; }
   .showcase { padding: 0; } .item { background: none; border-color: #D9D6DA; break-inside: avoid; }
@@ -166,7 +177,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
 }
 </style>
 </head>
-<body>
+<body data-mode="stage" data-tier="a">
 <header class="top">
   <img class="logo" src="assets/enocta-logo.png" alt="Enocta" width="415" height="255">
   <p class="count"><span class="n">02</span> <span>briefs</span></p>
@@ -274,7 +285,6 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
 </div>
   </div>
 </div>
-<div class="cursor" aria-hidden="true"><span>View</span></div>
 <script>
 (function () {
   var d = document, root = d.documentElement;
@@ -282,21 +292,30 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
   if (!rows.length) return;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var stage = matchMedia("(min-width: 1000px) and (min-height: 560px)");
+  var scrollMode = d.body.getAttribute("data-mode") === "scroll"; // 7 or more briefs: the page scrolls and the stage is sticky
   var frames = panels.map(function (p) { return p.querySelector(".frame"); });
   var vids = panels.map(function (p) { return p.querySelector("video"); });
-  var cur = 0, ready = false, autoTimer = null, stopped = false;
+  var cur = 0, ready = false, autoTimer = null, stopped = scrollMode, manualUntil = 0, playTimer = 0;
+  var now = function () { return performance.now(); };
 
   function play(v) { if (!v || reduce) return; try { var p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
   function pause(v) { try { if (v) v.pause(); } catch (e) {} }
+  // only the first few briefs ship their poster; the others fetch it when they become active or come near the viewport
+  function loadPoster(i) { var v = vids[i]; if (v && !v.getAttribute("poster") && v.getAttribute("data-poster")) v.setAttribute("poster", v.getAttribute("data-poster")); }
   function syncVideos() {
     vids.forEach(function (v, i) { if (stage.matches) { if (ready && i === cur) play(v); else pause(v); } });
   }
   function setActive(i) {
+    loadPoster(i); loadPoster(i + 1); loadPoster(i - 1);
     if (i === cur && rows[i].classList.contains("is-active")) return;
     var old = cur; cur = i;
     rows.forEach(function (r, k) { r.classList.toggle("is-active", k === i); if (k === i) r.setAttribute("aria-current", "true"); else r.removeAttribute("aria-current"); });
     panels.forEach(function (p, k) { p.classList.toggle("is-active", k === i); });
-    if (stage.matches) { if (ready) play(vids[i]); setTimeout(function () { if (cur !== old) pause(vids[old]); }, 650); }
+    if (stage.matches) {
+      // the clip starts only if the brief is still active a moment later, so scrubbing past many rows never loads their clips
+      clearTimeout(playTimer); playTimer = setTimeout(function () { if (ready && cur === i) play(vids[i]); }, 260);
+      setTimeout(function () { if (cur !== old) pause(vids[old]); }, 650);
+    }
   }
   function stopAuto() { stopped = true; if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
   function startAuto() {
@@ -305,8 +324,17 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
   }
 
   rows.forEach(function (r, i) {
-    r.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse" && stage.matches) { stopAuto(); setActive(i); } });
-    r.addEventListener("focus", function () { if (stage.matches) { stopAuto(); setActive(i); } });
+    if (scrollMode) {
+      // while the list scrolls under a parked pointer the browser fires synthetic enters; only real pointer movement counts
+      r.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse" && stage.matches && (e.movementX || e.movementY)) { manualUntil = now() + 600; setActive(i); } });
+    } else {
+      r.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse" && stage.matches) { stopAuto(); setActive(i); } });
+    }
+    r.addEventListener("focus", function () {
+      if (!stage.matches) return;
+      stopAuto(); manualUntil = now() + 1200; setActive(i);
+      if (scrollMode) r.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+    });
   });
   var ix = d.querySelector(".index");
   ix.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") stopAuto(); });
@@ -321,9 +349,28 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
     if (!onRow && !(stage.matches && fixed && (d.activeElement === d.body || !d.activeElement))) return;
     e.preventDefault(); stopAuto();
     var next = (cur + (e.key === "ArrowDown" ? 1 : -1) + rows.length) % rows.length;
-    rows[next].focus();
+    manualUntil = now() + 1200;
+    if (scrollMode && stage.matches) { rows[next].focus({ preventScroll: true }); rows[next].scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" }); }
+    else rows[next].focus();
     setActive(next);
   });
+
+  // 7+ briefs: the row nearest the middle of the viewport becomes active while the page scrolls
+  if (scrollMode && "IntersectionObserver" in window) {
+    var armed = scrollY > 0, pickTimer = 0; // the newest brief stays active on load; the first observer callback is not a scroll
+    var pick = function () {
+      if (!stage.matches) return;
+      var best = -1, bd = 1e9, mid = innerHeight / 2;
+      rows.forEach(function (r, i) { var b = r.getBoundingClientRect(), dd = Math.abs(b.top + b.height / 2 - mid); if (dd < bd) { bd = dd; best = i; } });
+      if (best >= 0) setActive(best);
+    };
+    var mid = new IntersectionObserver(function () {
+      if (!armed) { armed = true; return; }
+      // a pointer / keyboard choice wins for a moment; the scroll position is re-read once that moment is over
+      clearTimeout(pickTimer); pickTimer = setTimeout(pick, Math.max(0, manualUntil - now()) + 40);
+    }, { rootMargin: "-46% 0px -46% 0px", threshold: 0 });
+    rows.forEach(function (r) { mid.observe(r); });
+  }
 
   // shared-element view transition: the clicked brief's frame carries the same name as the film on the brief page
   d.addEventListener("click", function (e) {
@@ -339,36 +386,29 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
       var from = window.navigation && navigation.activation && navigation.activation.from && navigation.activation.from.url;
       if (!from) return;
       var path = new URL(from).pathname;
-      rows.forEach(function (r, i) { if (path.indexOf("/" + r.getAttribute("data-slug") + "/") >= 0) { setActive(i); stopAuto(); frames[i].style.viewTransitionName = "brief-film"; } });
+      rows.forEach(function (r, i) { if (path.indexOf("/" + r.getAttribute("data-slug") + "/") >= 0) { setActive(i); stopAuto(); frames[i].style.viewTransitionName = "brief-film"; if (scrollMode) r.scrollIntoView({ block: "center" }); } });
     } catch (e) {}
   });
 
-  // custom "View" cursor over the stage: pointer devices only
-  var cursor = d.querySelector(".cursor"), cx = 0, cy = 0, raf = 0;
-  if (cursor && !reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
-    root.classList.add("has-cursor");
-    d.addEventListener("pointermove", function (e) {
-      if (e.pointerType !== "mouse") return;
-      cx = e.clientX; cy = e.clientY;
-      var over = stage.matches && e.target.closest && e.target.closest(".panel.is-active");
-      cursor.classList.toggle("on", !!over);
-      if (!raf) raf = requestAnimationFrame(function () { raf = 0; cursor.style.transform = "translate3d(" + cx + "px," + cy + "px,0)"; });
-    }, { passive: true });
-    d.addEventListener("pointerleave", function () { cursor.classList.remove("on"); });
-  }
-
-  // stacked mode: each clip plays only while its card is on screen
-  var io = null;
+  // stacked mode: each clip plays only while its card is on screen; posters load as the cards come near
+  var io = null, near = null;
+  function loadAllPosters() { vids.forEach(function (v, i) { loadPoster(i); }); }
   function observe() {
     if (io) io.disconnect();
-    if (!("IntersectionObserver" in window) || reduce) return;
+    if (near) near.disconnect();
+    if (!("IntersectionObserver" in window)) { loadAllPosters(); return; }
+    near = new IntersectionObserver(function (es) {
+      es.forEach(function (en) { if (!stage.matches && en.isIntersecting) loadPoster(frames.indexOf(en.target)); });
+    }, { rootMargin: "700px 0px" });
+    frames.forEach(function (f) { near.observe(f); });
+    if (reduce) return;
     io = new IntersectionObserver(function (es) {
       es.forEach(function (en) { if (stage.matches) return; var v = en.target.querySelector("video"); if (en.isIntersecting) play(v); else pause(v); });
     }, { threshold: 0.5 });
     frames.forEach(function (f) { io.observe(f); });
   }
   function stopAutoSoft() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
-  function onMode() { syncVideos(); if (stage.matches) { if (io) io.disconnect(); startAuto(); } else { stopAutoSoft(); observe(); } }
+  function onMode() { syncVideos(); if (stage.matches) { if (io) io.disconnect(); if (near) near.disconnect(); startAuto(); } else { stopAutoSoft(); observe(); } }
   if (stage.addEventListener) stage.addEventListener("change", onMode);
 
   // load sequence (about 1.2 s) is CSS; the active clip starts when the stage frame is in
