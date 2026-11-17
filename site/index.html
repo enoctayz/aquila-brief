@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACMElEQVR42mOQkJBiQMICQLpBQkLqvISE1H8q4/NQswWQ7US2PEFCQuo9DSxGx++hdqE4IIEOFqPjBJgDBOjkc2whIcAAjZf/A4QbGGiU4IhOmAwDaDkYjzqALAfIysr9j4qK/n/w4MH/O3bs/B8eHvFfRkaO9g4AWVJbW/v/1atX/z98+PD//fv3/588eQLGd+/e+5+Wlk47B3h6ev1/9OgR2GIYfv36NdwBILxr1y7aOKC9vR3FYhC+fPkyiuUgHBQUQn0HzJo1C8XiN2/e/E9JSf3f2NiEYvnevXupnwbKyspRLH/27Nl/U1NzcKJ7/Pgx3PJr167/V1ZWpa4DdHX1wYkM2edGRib/U1PTUHx+7tz5/+rqmtTPhgsXLkLxfVJSMljczc3j/8OHD8GWL1iw4L+srDxOwx0dnf47ODiS54Bbt27BLb927RqKnIKC4n81NQ28Bnd0dMJDCZReSHYAKKhfvHj5/927d/8TEhJxGqCkpPI/NjYebCGyOChdwBwAyjEkO0BaWvb/zZs3ofl79/+SktL/YWHh/0NCQsG5oL+////Zs2dR0oOZmTnWEGhoaCQvF4AsRM/r+PCyZctQ9NvbO/y3s3OgrBxYunQZ0Q4AZU1CaYNkB0hKSv+vqqr+/+DBA6IckZiYRJu6QE5O/r+/f8D/KVOm/j916vT/+/chDrp37/7/48ePg9MEqL6QkpIZbZCQ7IABb5QOeLN8wDsmA941GxSd0wHrngMALfgzKe7kgmwAAAAASUVORK5CYII=">
 <link rel="icon" type="image/png" sizes="48x48" href="assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
-<title>Enocta AI · Briefs</title>
+<title>Enocta AI</title>
 <script>
 // layout, decided before the first paint: "reel" (desktop, 2+ briefs, motion allowed: pinned, scroll-scrubbed), "static" (desktop, reduced motion or one brief), "stack" (narrow screens and no-JS)
 (function () {
@@ -172,7 +172,6 @@ html[data-layout="reel"] .showcase { container-type: size; padding: 0; overflow:
 html[data-layout="reel"] .index { position: absolute; inset: 0; display: block; }
 html[data-layout="reel"] .titleblock { position: absolute; z-index: 2; left: var(--gl); top: calc(var(--ts) * .3); width: auto; height: auto; overflow: visible; clip: auto; pointer-events: none; }
 html[data-layout="reel"] .page-title { font: 700 var(--tt)/1.05 var(--head); letter-spacing: -.02em; white-space: nowrap; color: #fff; }
-html[data-layout="reel"] .ct { margin-top: calc(var(--ts) * .15); font: 500 clamp(13px, calc(var(--ts) * .3), 24px)/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--grey3); }
 html[data-layout="reel"][data-tb="off"] .titleblock { display: none; }
 @media (max-height: 759px) { html[data-layout="reel"] .titleblock { display: none; } }
 html[data-layout="reel"] .row { position: absolute; left: var(--gl); width: var(--iw); top: calc(var(--act) - var(--rowh) / 2); height: var(--rowh); padding: 0 0 0 calc(var(--ts) * .6); column-gap: calc(var(--ts) * .36); row-gap: calc(var(--ts) * .045); align-content: center; transform-origin: 0 50%; opacity: 0; will-change: transform, opacity; animation: none !important; }
@@ -238,13 +237,12 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
 <div class="pin">
 <header class="top">
   <img class="logo" src="assets/enocta-logo.png" alt="Enocta" width="415" height="255">
-  <p class="count"><span class="n">07</span> <span>briefs</span></p>
+  <p class="count"><span class="n">07</span> <span>projects</span></p>
   <p class="prog" aria-hidden="true"><span class="n" id="cur">01</span> / 07</p>
 </header>
 <main class="showcase">
   <div class="titleblock">
-    <h1 class="page-title">Enocta AI · Briefs</h1>
-    <p class="ct" aria-hidden="true"><span class="n">07</span> <span>briefs</span></p>
+    <h1 class="page-title">Enocta AI</h1>
   </div>
   <span class="mark" aria-hidden="true"></span>
   <ul class="index" role="list">
@@ -266,7 +264,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
           <span class="summary" id="sum-turkish-ai">Better data, not a bigger model.</span>
           <span class="meta">
             <span class="filmlen"><span>Film</span> <span class="dur">1:12</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+            <span class="open"><span>Open project</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
           </span>
         </span>
       </a>
@@ -289,7 +287,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
           <span class="summary" id="sum-eci">ECI plans the week, the manager makes the calls.</span>
           <span class="meta">
             <span class="filmlen"><span>Film</span> <span class="dur">1:14</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+            <span class="open"><span>Open project</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
           </span>
         </span>
       </a>
@@ -312,7 +310,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
           <span class="summary" id="sum-shorts">The model directs, code does the filming.</span>
           <span class="meta">
             <span class="filmlen"><span>Film</span> <span class="dur">1:15</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+            <span class="open"><span>Open project</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
           </span>
         </span>
       </a>
@@ -335,7 +333,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
           <span class="summary" id="sum-freya-tts">One model, many voices.</span>
           <span class="meta">
             <span class="filmlen"><span>Film</span> <span class="dur">1:49</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+            <span class="open"><span>Open project</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
           </span>
         </span>
       </a>
@@ -358,7 +356,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
           <span class="summary" id="sum-karar-4b">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
           <span class="meta">
             <span class="filmlen"><span>Film</span> <span class="dur">1:39</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+            <span class="open"><span>Open project</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
           </span>
         </span>
       </a>
@@ -381,7 +379,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
           <span class="summary" id="sum-guardrails">Eight guardrails. Seven test angles. All passing.</span>
           <span class="meta">
             <span class="filmlen"><span>Film</span> <span class="dur">1:00</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+            <span class="open"><span>Open project</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
           </span>
         </span>
       </a>
@@ -404,7 +402,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
           <span class="summary" id="sum-jev-ats">Score each resume alone, compare them together.</span>
           <span class="meta">
             <span class="filmlen"><span>Film</span> <span class="dur">1:14</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+            <span class="open"><span>Open project</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
           </span>
         </span>
       </a>
@@ -621,7 +619,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
     RV.forEach(function (v) { rs.removeProperty(v); });
     var titles = rows.map(function (r) { return r.querySelector(".title"); }), fs0 = parseFloat(getComputedStyle(titles[0]).fontSize), widest = 1;
     titles.forEach(function (t) { widest = Math.max(widest, t.offsetWidth); });
-    var emw = widest / fs0, T = clamp(44 + (W - 1440) * 0.0357, 28, 84), avail = W * 0.92, ts = T, sw = 600, hdr, mq;
+    var emw = widest / fs0, T = clamp(44 + (W - 1440) * 0.0357, 28, 84), CW = root.clientWidth, avail = CW * 0.92, ts = T, sw = 600, hdr, mq;
     for (var k = 0; k < 5; k++) {
       hdr = ts * 0.77 + 40; mq = ts * 0.95;
       sw = clamp(Math.min(1100, 0.44 * W, (H - hdr - mq - 24) / 0.8019), 360, 1100);
@@ -629,12 +627,12 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
       ts = clamp(Math.min(T, (avail - 40 - sw) / (emw + 1.5)), 28, 84);
     }
     hdr = ts * 0.77 + 40;
-    var iw = (emw + 1.5) * ts, gp = clamp(avail - iw - sw, 24, 0.08 * W), gl = Math.max(W * 0.02, (W - iw - gp - sw) / 2);
+    var iw = (emw + 1.5) * ts, gp = clamp(avail - iw - sw, 24, 0.08 * W), gl = Math.max(W * 0.02, (CW - iw - gp - sw) / 2); // centred in the width without the scrollbar
     rs.setProperty("--ts", ts.toFixed(2) + "px"); rs.setProperty("--sw", sw.toFixed(1) + "px"); rs.setProperty("--iw", iw.toFixed(1) + "px"); rs.setProperty("--gp", gp.toFixed(1) + "px"); rs.setProperty("--gl", gl.toFixed(1) + "px");
     SLIDE = sw * 0.11; CAPOUT = sw * 0.047; CAPIN = sw * 0.38;
     // the pinned page title: as large as fits above the first row's slot; smaller on short windows, hidden below 760 px of height
-    var actTop = 0.38 * H - hdr - ts * 1.1, ctH = Math.max(13, ts * 0.3) * 1.25, room = actTop - ts * 0.3 - 16, tt = ts * 1.1;
-    if (tt * 1.05 + ts * 0.15 + ctH > room) tt = (room - ts * 0.15 - ctH) / 1.05;
+    var actTop = 0.38 * H - hdr - ts * 1.1, room = actTop - ts * 0.3 - 16, tt = ts * 1.1;
+    if (tt * 1.05 > room) tt = room / 1.05;
     var off = H < 760 || tt < 22;
     root.setAttribute("data-tb", off ? "off" : "on");
     if (!off) rs.setProperty("--tt", tt.toFixed(1) + "px");
