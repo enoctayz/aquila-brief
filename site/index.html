@@ -50,7 +50,7 @@
   --head: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
   --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  --maxw: 2000px; /* content never gets wider than this: on bigger screens the side padding grows instead */
+  --maxw: 3200px; /* stacked and static layouts: content never gets wider than this; the reel scales with the viewport instead */
   --pad: max(clamp(18px, 3.2vw, 48px), calc((100vw - var(--maxw)) / 2));
   --gap: clamp(32px, 4.5vw, 80px);
   --n: 7;
@@ -83,6 +83,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
 .count, .prog { font: 500 13px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--grey3); }
 .count .n, .prog .n { color: #fff; }
 .prog, .mark, .rail, .snaps { display: none; }
+.titleblock { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- stacked mode (narrow screens, short windows, no JS): a tall stack of full-width cards ---------- */
 .showcase { padding: 8px var(--pad) 28px; }
@@ -120,7 +121,7 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 .dot { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--crimson); flex: none; }
 
 /* ---------- desktop, shared by "static" and "reel" ---------- */
-html[data-layout="static"] .showcase, html[data-layout="reel"] .showcase { --cw: calc((100cqw - var(--gap)) / 2); --ts: clamp(28px, min(56px, calc((var(--cw) - 40px) / (0.48 * var(--len)))), 56px); }
+html[data-layout="static"] .showcase { --cw: calc((100cqw - var(--gap)) / 2); --ts: clamp(28px, min(56px, calc((var(--cw) - 40px) / (0.48 * var(--len)))), 56px); }
 html[data-layout="static"] .item, html[data-layout="reel"] .item { display: contents; }
 html[data-layout="static"] .row, html[data-layout="reel"] .row { color: #fff; }
 html[data-layout="static"] .idx, html[data-layout="reel"] .idx { color: var(--grey3); padding-top: calc(var(--ts) * .2); }
@@ -151,28 +152,50 @@ html[data-layout="static"] .panel.is-active { opacity: 1; visibility: visible; }
 html[data-n="1"][data-layout="static"] .index { min-height: calc(100 * var(--vh) - var(--hdr) - 44px - 24px); align-content: center; }
 
 /* ---------- reel (desktop, 2+ briefs): the layout is pinned inside a tall scroll container, scrolling scrubs through the briefs ----------
-   Each brief gets 55vh of scroll distance. Native scrolling only. The script writes transform and opacity from the scroll position (rAF). */
-/* proximity snapping: Chrome snaps to the nearest brief when the scroll ends within about a third of the snapport. The snapport is shrunk with scroll-padding
-   (the anchors below are moved down by the same amount), so a single wheel notch is not pulled back, but a position close to a brief still rests on it. */
-html[data-layout="reel"] { scroll-snap-type: y proximity; scroll-padding-block: 40vh; scroll-padding-block: 40dvh; }
+   Each brief gets 55vh of scroll distance. Native scrolling only. The script writes transform and opacity from the scroll position (rAF).
+   Everything scales with the viewport: --ts (active title) runs from 44 px at 1440 wide to 84 px at 2560; rows, tags, the stage (up to 1100 px, 16:9) and its
+   caption follow. The index column, the gap (never more than 8% of the width) and the stage form one group, centred; side padding is 4% of the width.
+   The values below are the CSS estimate; the script re-computes them from the real width of the longest name and writes them on <html>. */
+html[data-layout="reel"] { scroll-snap-type: y proximity; scroll-padding-block: 40vh; scroll-padding-block: 40dvh;
+  --T: clamp(28px, calc(44px + (100vw - 1440px) * .0357), 84px); --ts: var(--T);
+  --hdr: calc(var(--ts) * .77 + 40px); --mqh: calc(var(--ts) * .95); --rowh: calc(var(--ts) * 2.2);
+  --sw: clamp(360px, min(1100px, 44vw, calc((100 * var(--vh) - var(--hdr) - var(--mqh) - 24px) / .8019)), 1100px);
+  --iw: calc(var(--ts) * 14.05); --gp: clamp(24px, calc(92vw - var(--iw) - var(--sw)), 8vw); --gl: calc((100vw - var(--iw) - var(--gp) - var(--sw)) / 2);
+  --tt: calc(var(--ts) * 1.1); --act: calc(38 * var(--vh) - var(--hdr)); --caph: calc(var(--sw) * .211); --capm: calc(var(--sw) * .0284); }
 html[data-layout="reel"] .reel { position: relative; height: calc((100 + (var(--n) - 1) * 55) * var(--vh)); }
-html[data-layout="reel"] .pin { position: sticky; top: 0; height: calc(100 * var(--vh)); min-height: 0; display: grid; grid-template-rows: var(--hdr) minmax(0, 1fr) auto; overflow: hidden; }
-html[data-layout="reel"] .top { height: var(--hdr); padding-block: 0; }
+html[data-layout="reel"] .pin { position: sticky; top: 0; height: calc(100 * var(--vh)); min-height: 0; display: grid; grid-template-rows: var(--hdr) minmax(0, 1fr) var(--mqh); overflow: hidden; }
+html[data-layout="reel"] .top { height: var(--hdr); padding: 0 var(--gl); }
+html[data-layout="reel"] .logo { height: calc(var(--ts) * .77); }
 html[data-layout="reel"] .count { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-html[data-layout="reel"] .prog { display: block; }
-html[data-layout="reel"] .showcase { container-type: size; padding: 0 var(--pad); overflow: hidden; --act: calc(38 * var(--vh) - var(--hdr)); --pw: min(var(--cw), calc((100cqh - 170px) * 16 / 9)); }
+html[data-layout="reel"] .prog { display: block; font-size: clamp(13px, calc(var(--ts) * .3), 25px); }
+html[data-layout="reel"] .showcase { container-type: size; padding: 0; overflow: hidden; }
 html[data-layout="reel"] .index { position: absolute; inset: 0; display: block; }
-html[data-layout="reel"] .row { position: absolute; left: var(--pad); width: var(--cw); top: calc(var(--act) - var(--rowh) / 2); height: var(--rowh); padding: 0 0 0 26px; align-content: center; transform-origin: 0 50%; opacity: 0; will-change: transform, opacity; animation: none !important; }
+html[data-layout="reel"] .titleblock { position: absolute; z-index: 2; left: var(--gl); top: calc(var(--ts) * .3); width: auto; height: auto; overflow: visible; clip: auto; pointer-events: none; }
+html[data-layout="reel"] .page-title { font: 700 var(--tt)/1.05 var(--head); letter-spacing: -.02em; white-space: nowrap; color: #fff; }
+html[data-layout="reel"] .ct { margin-top: calc(var(--ts) * .15); font: 500 clamp(13px, calc(var(--ts) * .3), 24px)/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--grey3); }
+html[data-layout="reel"][data-tb="off"] .titleblock { display: none; }
+@media (max-height: 759px) { html[data-layout="reel"] .titleblock { display: none; } }
+html[data-layout="reel"] .row { position: absolute; left: var(--gl); width: var(--iw); top: calc(var(--act) - var(--rowh) / 2); height: var(--rowh); padding: 0 0 0 calc(var(--ts) * .6); column-gap: calc(var(--ts) * .36); row-gap: calc(var(--ts) * .045); align-content: center; transform-origin: 0 50%; opacity: 0; will-change: transform, opacity; animation: none !important; }
+html[data-layout="reel"] .idx { font-size: clamp(14px, calc(var(--ts) * .32), 28px); }
+html[data-layout="reel"] .tag { font-size: clamp(12px, calc(var(--ts) * .27), 23px); }
 html[data-layout="reel"] .row::after { content: ""; position: absolute; inset: 6px -14px 6px 8px; border-radius: 14px; background: rgba(255,255,255,.06); opacity: 0; pointer-events: none; }
 html[data-layout="reel"] .row:hover::after { opacity: 1; }
 html[data-layout="reel"] .row:hover .title { text-decoration: underline; text-decoration-color: var(--crimson); text-decoration-thickness: 2px; text-underline-offset: 6px; }
-html[data-layout="reel"] .mark { display: block; position: absolute; z-index: 1; left: var(--pad); top: calc(var(--act) - 30px); height: 60px; width: 4px; border-radius: 2px; background: var(--crimson); pointer-events: none; }
-html[data-layout="reel"] .panel { display: block; position: absolute; pointer-events: none; left: calc(var(--pad) + var(--cw) + var(--gap)); width: var(--pw); top: max(12px, calc((100cqh - var(--pw) * 9 / 16 - 152px) / 2)); height: calc(var(--pw) * 9 / 16 + 152px); }
+html[data-layout="reel"] .mark { display: block; position: absolute; z-index: 1; left: var(--gl); top: calc(var(--act) - var(--ts) * .68); height: calc(var(--ts) * 1.36); width: clamp(4px, calc(var(--ts) * .09), 8px); border-radius: 2px; background: var(--crimson); pointer-events: none; }
+html[data-layout="reel"] .panel { display: block; position: absolute; pointer-events: none; left: calc(var(--gl) + var(--iw) + var(--gp)); width: var(--sw); top: max(12px, calc((100cqh - var(--sw) * 9 / 16 - var(--caph) - var(--capm)) / 2)); height: calc(var(--sw) * 9 / 16 + var(--caph) + var(--capm)); }
 html[data-layout="reel"] .panel.is-active { z-index: 1; }
-html[data-layout="reel"] .frame { pointer-events: auto; opacity: 0; visibility: hidden; will-change: transform, opacity; animation: none !important; }
-html[data-layout="reel"] .cap { pointer-events: auto; height: 134px; opacity: 0; visibility: hidden; will-change: transform, opacity; animation: none !important; }
-html[data-layout="reel"] .marquee { position: relative; bottom: auto; }
-html[data-layout="reel"] .rail { display: block; position: absolute; z-index: 3; right: calc(var(--pad) / 2 - 1px); top: calc(var(--hdr) + 20px); bottom: 64px; width: 2px; border-radius: 1px; background: rgba(255,255,255,.16); overflow: hidden; }
+html[data-layout="reel"] .frame { pointer-events: auto; opacity: 0; visibility: hidden; will-change: transform, opacity; animation: none !important; border-radius: calc(var(--sw) * .04); }
+html[data-layout="reel"] .cap { pointer-events: auto; height: var(--caph); margin-top: var(--capm); gap: calc(var(--sw) * .016); opacity: 0; visibility: hidden; will-change: transform, opacity; animation: none !important; }
+html[data-layout="reel"] .full { font-size: calc(var(--sw) * .0205); }
+html[data-layout="reel"] .summary { font-size: calc(var(--sw) * .0347); }
+html[data-layout="reel"] .meta { font-size: calc(var(--sw) * .022); }
+html[data-layout="reel"] .open svg { width: calc(var(--sw) * .025); height: calc(var(--sw) * .025); }
+html[data-layout="reel"] .marquee { position: relative; bottom: auto; height: var(--mqh); padding: 0; display: flex; align-items: center; }
+html[data-layout="reel"] .mi, html[data-layout="reel"] .mi.n { font-size: clamp(15px, calc(var(--ts) * .34), 29px); }
+html[data-layout="reel"] .mi.t { font-size: clamp(13px, calc(var(--ts) * .3), 25px); }
+html[data-layout="reel"] .half { gap: calc(var(--ts) * .64); padding-right: calc(var(--ts) * .64); }
+html[data-layout="reel"] .dot { width: calc(var(--ts) * .14); height: calc(var(--ts) * .14); }
+html[data-layout="reel"] .rail { display: block; position: absolute; z-index: 3; right: calc(var(--gl) / 2 - 1px); top: calc(var(--hdr) + 20px); bottom: calc(var(--mqh) + 20px); width: 2px; border-radius: 1px; background: rgba(255,255,255,.16); overflow: hidden; }
 html[data-layout="reel"] .rail i { display: block; width: 100%; height: 100%; background: var(--crimson); transform-origin: 0 0; transform: scaleY(0); will-change: transform; }
 html[data-layout="reel"] .snaps { display: block; position: absolute; inset: 0; pointer-events: none; }
 html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(--k) * 55 * var(--vh) + 40 * var(--vh)); width: 1px; height: 1px; scroll-snap-align: start; }
@@ -180,7 +203,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
 /* ---------- motion (skipped entirely with prefers-reduced-motion) ---------- */
 @media (prefers-reduced-motion: no-preference) {
   body::before { animation: glow 26s ease-in-out infinite alternate; }
-  .track { animation: scroll 309s linear infinite; }
+  .track { animation: scroll 299s linear infinite; }
   .marquee:hover .track { animation-play-state: paused; }
   .logo, .count { animation: fade .45s ease both; }
   html:not([data-layout="reel"]) .item .row { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.25s + var(--i) * .6s / var(--n)); }
@@ -219,17 +242,43 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
   <p class="prog" aria-hidden="true"><span class="n" id="cur">01</span> / 07</p>
 </header>
 <main class="showcase">
-  <h1 class="sr">Enocta AI · Briefs</h1>
+  <div class="titleblock">
+    <h1 class="page-title">Enocta AI · Briefs</h1>
+    <p class="ct" aria-hidden="true"><span class="n">07</span> <span>briefs</span></p>
+  </div>
   <span class="mark" aria-hidden="true"></span>
   <ul class="index" role="list">
     <li class="item" role="listitem" style="--i:0">
-      <a class="row is-active" href="eci/" aria-current="true" aria-describedby="sum-eci" data-slug="eci">
+      <a class="row is-active" href="turkish-ai/" aria-current="true" aria-describedby="sum-turkish-ai" data-slug="turkish-ai">
         <span class="idx">01</span>
+        <span class="title">Distilled LLM for <span class="nb">Role-Play</span></span>
+        <span class="sr">Distilling a Turkish role-play model</span>
+        <span class="tag">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
+      </a>
+      <a class="panel is-active intro" href="turkish-ai/" tabindex="-1" aria-hidden="true" data-slug="turkish-ai">
+        <span class="frame">
+          <video muted loop playsinline preload="none" poster="assets/cards/turkish-ai.jpg" width="960" height="540">
+            <source src="assets/previews/turkish-ai.mp4" type="video/mp4">
+          </video>
+        </span>
+        <span class="cap">
+          <span class="full">Distilling a Turkish role-play model</span>
+          <span class="summary" id="sum-turkish-ai">Better data, not a bigger model.</span>
+          <span class="meta">
+            <span class="filmlen"><span>Film</span> <span class="dur">1:12</span></span>
+            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+          </span>
+        </span>
+      </a>
+    </li>
+    <li class="item" role="listitem" style="--i:1">
+      <a class="row" href="eci/" aria-describedby="sum-eci" data-slug="eci">
+        <span class="idx">02</span>
         <span class="title">Enocta ECI</span>
         <span class="sr">Running 82 accounts with one manager</span>
         <span class="tag">ENOCTA CUSTOMER INTELLIGENCE · ECI</span>
       </a>
-      <a class="panel is-active intro" href="eci/" tabindex="-1" aria-hidden="true" data-slug="eci">
+      <a class="panel" href="eci/" tabindex="-1" aria-hidden="true" data-slug="eci">
         <span class="frame">
           <video muted loop playsinline preload="none" poster="assets/cards/eci.jpg" width="960" height="540">
             <source src="assets/previews/eci.mp4" type="video/mp4">
@@ -245,85 +294,16 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:1">
-      <a class="row" href="karar-4b/" aria-describedby="sum-karar-4b" data-slug="karar-4b">
-        <span class="idx">02</span>
-        <span class="title"><span class="nb">Karar-4B</span></span>
-        <span class="sr">Karar-4B: an open decision model for Turkish</span>
-        <span class="tag">OPEN MODEL · TURKISH DECISIONS</span>
-      </a>
-      <a class="panel" href="karar-4b/" tabindex="-1" aria-hidden="true" data-slug="karar-4b">
-        <span class="frame">
-          <video muted loop playsinline preload="none" poster="assets/cards/karar-4b.jpg" width="960" height="540">
-            <source src="assets/previews/karar-4b.mp4" type="video/mp4">
-          </video>
-        </span>
-        <span class="cap">
-          <span class="full">Karar-4B: an open decision model for Turkish</span>
-          <span class="summary" id="sum-karar-4b">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
-          <span class="meta">
-            <span class="filmlen"><span>Film</span> <span class="dur">1:39</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
-          </span>
-        </span>
-      </a>
-    </li>
     <li class="item" role="listitem" style="--i:2">
-      <a class="row" href="freya-tts/" aria-describedby="sum-freya-tts" data-slug="freya-tts">
-        <span class="idx">03</span>
-        <span class="title">Enocta Voices</span>
-        <span class="sr">Fine-tuning FreyaTTS on Enocta voices</span>
-        <span class="tag">SPEECH SYNTHESIS · FINE-TUNING</span>
-      </a>
-      <a class="panel" href="freya-tts/" tabindex="-1" aria-hidden="true" data-slug="freya-tts">
-        <span class="frame">
-          <video muted loop playsinline preload="none" poster="assets/cards/freya-tts.jpg" width="960" height="540">
-            <source src="assets/previews/freya-tts.mp4" type="video/mp4">
-          </video>
-        </span>
-        <span class="cap">
-          <span class="full">Fine-tuning FreyaTTS on Enocta voices</span>
-          <span class="summary" id="sum-freya-tts">One model, many voices.</span>
-          <span class="meta">
-            <span class="filmlen"><span>Film</span> <span class="dur">1:49</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
-          </span>
-        </span>
-      </a>
-    </li>
-    <li class="item" role="listitem" style="--i:3">
-      <a class="row" href="jev-ats/" aria-describedby="sum-jev-ats" data-slug="jev-ats">
-        <span class="idx">04</span>
-        <span class="title">Typed Resume Screening</span>
-        <span class="sr">Screening resumes with typed answers</span>
-        <span class="tag">TYPED JUDGMENT · RESUME SCREENING</span>
-      </a>
-      <a class="panel" href="jev-ats/" tabindex="-1" aria-hidden="true" data-slug="jev-ats">
-        <span class="frame">
-          <video muted loop playsinline preload="none" data-poster="assets/cards/jev-ats.jpg" width="960" height="540">
-            <source src="assets/previews/jev-ats.mp4" type="video/mp4">
-          </video>
-        </span>
-        <span class="cap">
-          <span class="full">Screening resumes with typed answers</span>
-          <span class="summary" id="sum-jev-ats">Score each resume alone, compare them together.</span>
-          <span class="meta">
-            <span class="filmlen"><span>Film</span> <span class="dur">1:14</span></span>
-            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
-          </span>
-        </span>
-      </a>
-    </li>
-    <li class="item" role="listitem" style="--i:4">
       <a class="row" href="shorts/" aria-describedby="sum-shorts" data-slug="shorts">
-        <span class="idx">05</span>
+        <span class="idx">03</span>
         <span class="title">Enocta Shorts</span>
         <span class="sr">Turning courses into vertical shorts</span>
         <span class="tag">AGENTIC VIDEO REFRAMING · SHORTS</span>
       </a>
       <a class="panel" href="shorts/" tabindex="-1" aria-hidden="true" data-slug="shorts">
         <span class="frame">
-          <video muted loop playsinline preload="none" data-poster="assets/cards/shorts.jpg" width="960" height="540">
+          <video muted loop playsinline preload="none" poster="assets/cards/shorts.jpg" width="960" height="540">
             <source src="assets/previews/shorts.mp4" type="video/mp4">
           </video>
         </span>
@@ -337,32 +317,55 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:5">
-      <a class="row" href="turkish-ai/" aria-describedby="sum-turkish-ai" data-slug="turkish-ai">
-        <span class="idx">06</span>
-        <span class="title">Distilled LLM for <span class="nb">Role-Play</span></span>
-        <span class="sr">Distilling a Turkish role-play model</span>
-        <span class="tag">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
+    <li class="item" role="listitem" style="--i:3">
+      <a class="row" href="freya-tts/" aria-describedby="sum-freya-tts" data-slug="freya-tts">
+        <span class="idx">04</span>
+        <span class="title">Enocta Voices</span>
+        <span class="sr">Fine-tuning FreyaTTS on Enocta voices</span>
+        <span class="tag">SPEECH SYNTHESIS · FINE-TUNING</span>
       </a>
-      <a class="panel" href="turkish-ai/" tabindex="-1" aria-hidden="true" data-slug="turkish-ai">
+      <a class="panel" href="freya-tts/" tabindex="-1" aria-hidden="true" data-slug="freya-tts">
         <span class="frame">
-          <video muted loop playsinline preload="none" data-poster="assets/cards/turkish-ai.jpg" width="960" height="540">
-            <source src="assets/previews/turkish-ai.mp4" type="video/mp4">
+          <video muted loop playsinline preload="none" data-poster="assets/cards/freya-tts.jpg" width="960" height="540">
+            <source src="assets/previews/freya-tts.mp4" type="video/mp4">
           </video>
         </span>
         <span class="cap">
-          <span class="full">Distilling a Turkish role-play model</span>
-          <span class="summary" id="sum-turkish-ai">Better data, not a bigger model.</span>
+          <span class="full">Fine-tuning FreyaTTS on Enocta voices</span>
+          <span class="summary" id="sum-freya-tts">One model, many voices.</span>
           <span class="meta">
-            <span class="filmlen"><span>Film</span> <span class="dur">1:12</span></span>
+            <span class="filmlen"><span>Film</span> <span class="dur">1:49</span></span>
             <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
           </span>
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:6">
+    <li class="item" role="listitem" style="--i:4">
+      <a class="row" href="karar-4b/" aria-describedby="sum-karar-4b" data-slug="karar-4b">
+        <span class="idx">05</span>
+        <span class="title"><span class="nb">Karar-4B</span></span>
+        <span class="sr">Karar-4B: an open decision model for Turkish</span>
+        <span class="tag">OPEN MODEL · TURKISH DECISIONS</span>
+      </a>
+      <a class="panel" href="karar-4b/" tabindex="-1" aria-hidden="true" data-slug="karar-4b">
+        <span class="frame">
+          <video muted loop playsinline preload="none" data-poster="assets/cards/karar-4b.jpg" width="960" height="540">
+            <source src="assets/previews/karar-4b.mp4" type="video/mp4">
+          </video>
+        </span>
+        <span class="cap">
+          <span class="full">Karar-4B: an open decision model for Turkish</span>
+          <span class="summary" id="sum-karar-4b">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
+          <span class="meta">
+            <span class="filmlen"><span>Film</span> <span class="dur">1:39</span></span>
+            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+          </span>
+        </span>
+      </a>
+    </li>
+    <li class="item" role="listitem" style="--i:5">
       <a class="row" href="guardrails/" aria-describedby="sum-guardrails" data-slug="guardrails">
-        <span class="idx">07</span>
+        <span class="idx">06</span>
         <span class="title">Production Guardrails</span>
         <span class="sr">Production Guardrails Brief</span>
         <span class="tag">Zero-trust AI</span>
@@ -383,23 +386,52 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
         </span>
       </a>
     </li>
+    <li class="item" role="listitem" style="--i:6">
+      <a class="row" href="jev-ats/" aria-describedby="sum-jev-ats" data-slug="jev-ats">
+        <span class="idx">07</span>
+        <span class="title">Typed Resume Screening</span>
+        <span class="sr">Screening resumes with typed answers</span>
+        <span class="tag">TYPED JUDGMENT · RESUME SCREENING</span>
+      </a>
+      <a class="panel" href="jev-ats/" tabindex="-1" aria-hidden="true" data-slug="jev-ats">
+        <span class="frame">
+          <video muted loop playsinline preload="none" data-poster="assets/cards/jev-ats.jpg" width="960" height="540">
+            <source src="assets/previews/jev-ats.mp4" type="video/mp4">
+          </video>
+        </span>
+        <span class="cap">
+          <span class="full">Screening resumes with typed answers</span>
+          <span class="summary" id="sum-jev-ats">Score each resume alone, compare them together.</span>
+          <span class="meta">
+            <span class="filmlen"><span>Film</span> <span class="dur">1:14</span></span>
+            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+          </span>
+        </span>
+      </a>
+    </li>
   </ul>
 </main>
 <div class="rail" aria-hidden="true"><i></i></div>
 <div class="marquee" aria-hidden="true">
   <div class="track">
 <div class="half">
+<span class="mi n">Distilled LLM for Role-Play</span>
+<i class="dot"></i>
+<span class="mi t">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
+<i class="dot"></i>
+<span class="mi">Better data, not a bigger model.</span>
+<i class="dot"></i>
 <span class="mi n">Enocta ECI</span>
 <i class="dot"></i>
 <span class="mi t">ENOCTA CUSTOMER INTELLIGENCE · ECI</span>
 <i class="dot"></i>
 <span class="mi">ECI plans the week, the manager makes the calls.</span>
 <i class="dot"></i>
-<span class="mi n">Karar-4B</span>
+<span class="mi n">Enocta Shorts</span>
 <i class="dot"></i>
-<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
+<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
 <i class="dot"></i>
-<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
+<span class="mi">The model directs, code does the filming.</span>
 <i class="dot"></i>
 <span class="mi n">Enocta Voices</span>
 <i class="dot"></i>
@@ -407,17 +439,17 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
 <i class="dot"></i>
 <span class="mi">One model, many voices.</span>
 <i class="dot"></i>
-<span class="mi n">Typed Resume Screening</span>
+<span class="mi n">Karar-4B</span>
 <i class="dot"></i>
-<span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
+<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
 <i class="dot"></i>
-<span class="mi">Score each resume alone, compare them together.</span>
+<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
 <i class="dot"></i>
-<span class="mi n">Enocta Shorts</span>
+<span class="mi n">Production Guardrails</span>
 <i class="dot"></i>
-<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
+<span class="mi t">Zero-trust AI</span>
 <i class="dot"></i>
-<span class="mi">The model directs, code does the filming.</span>
+<span class="mi">Eight guardrails. Seven test angles. All passing.</span>
 <i class="dot"></i>
 <span class="mi n">Distilled LLM for Role-Play</span>
 <i class="dot"></i>
@@ -431,11 +463,11 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
 <i class="dot"></i>
 <span class="mi">ECI plans the week, the manager makes the calls.</span>
 <i class="dot"></i>
-<span class="mi n">Karar-4B</span>
+<span class="mi n">Enocta Shorts</span>
 <i class="dot"></i>
-<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
+<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
 <i class="dot"></i>
-<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
+<span class="mi">The model directs, code does the filming.</span>
 <i class="dot"></i>
 <span class="mi n">Enocta Voices</span>
 <i class="dot"></i>
@@ -443,37 +475,37 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
 <i class="dot"></i>
 <span class="mi">One model, many voices.</span>
 <i class="dot"></i>
-<span class="mi n">Typed Resume Screening</span>
+<span class="mi n">Karar-4B</span>
 <i class="dot"></i>
-<span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
+<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
 <i class="dot"></i>
-<span class="mi">Score each resume alone, compare them together.</span>
+<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
 <i class="dot"></i>
-<span class="mi n">Enocta Shorts</span>
+<span class="mi n">Production Guardrails</span>
 <i class="dot"></i>
-<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
+<span class="mi t">Zero-trust AI</span>
 <i class="dot"></i>
-<span class="mi">The model directs, code does the filming.</span>
-<i class="dot"></i>
-<span class="mi n">Distilled LLM for Role-Play</span>
-<i class="dot"></i>
-<span class="mi t">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
-<i class="dot"></i>
-<span class="mi">Better data, not a bigger model.</span>
+<span class="mi">Eight guardrails. Seven test angles. All passing.</span>
 <i class="dot"></i>
 </div>
 <div class="half">
+<span class="mi n">Distilled LLM for Role-Play</span>
+<i class="dot"></i>
+<span class="mi t">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
+<i class="dot"></i>
+<span class="mi">Better data, not a bigger model.</span>
+<i class="dot"></i>
 <span class="mi n">Enocta ECI</span>
 <i class="dot"></i>
 <span class="mi t">ENOCTA CUSTOMER INTELLIGENCE · ECI</span>
 <i class="dot"></i>
 <span class="mi">ECI plans the week, the manager makes the calls.</span>
 <i class="dot"></i>
-<span class="mi n">Karar-4B</span>
+<span class="mi n">Enocta Shorts</span>
 <i class="dot"></i>
-<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
+<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
 <i class="dot"></i>
-<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
+<span class="mi">The model directs, code does the filming.</span>
 <i class="dot"></i>
 <span class="mi n">Enocta Voices</span>
 <i class="dot"></i>
@@ -481,17 +513,17 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
 <i class="dot"></i>
 <span class="mi">One model, many voices.</span>
 <i class="dot"></i>
-<span class="mi n">Typed Resume Screening</span>
+<span class="mi n">Karar-4B</span>
 <i class="dot"></i>
-<span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
+<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
 <i class="dot"></i>
-<span class="mi">Score each resume alone, compare them together.</span>
+<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
 <i class="dot"></i>
-<span class="mi n">Enocta Shorts</span>
+<span class="mi n">Production Guardrails</span>
 <i class="dot"></i>
-<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
+<span class="mi t">Zero-trust AI</span>
 <i class="dot"></i>
-<span class="mi">The model directs, code does the filming.</span>
+<span class="mi">Eight guardrails. Seven test angles. All passing.</span>
 <i class="dot"></i>
 <span class="mi n">Distilled LLM for Role-Play</span>
 <i class="dot"></i>
@@ -505,11 +537,11 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
 <i class="dot"></i>
 <span class="mi">ECI plans the week, the manager makes the calls.</span>
 <i class="dot"></i>
-<span class="mi n">Karar-4B</span>
+<span class="mi n">Enocta Shorts</span>
 <i class="dot"></i>
-<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
+<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
 <i class="dot"></i>
-<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
+<span class="mi">The model directs, code does the filming.</span>
 <i class="dot"></i>
 <span class="mi n">Enocta Voices</span>
 <i class="dot"></i>
@@ -517,23 +549,17 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
 <i class="dot"></i>
 <span class="mi">One model, many voices.</span>
 <i class="dot"></i>
-<span class="mi n">Typed Resume Screening</span>
+<span class="mi n">Karar-4B</span>
 <i class="dot"></i>
-<span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
+<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
 <i class="dot"></i>
-<span class="mi">Score each resume alone, compare them together.</span>
+<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
 <i class="dot"></i>
-<span class="mi n">Enocta Shorts</span>
+<span class="mi n">Production Guardrails</span>
 <i class="dot"></i>
-<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
+<span class="mi t">Zero-trust AI</span>
 <i class="dot"></i>
-<span class="mi">The model directs, code does the filming.</span>
-<i class="dot"></i>
-<span class="mi n">Distilled LLM for Role-Play</span>
-<i class="dot"></i>
-<span class="mi t">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
-<i class="dot"></i>
-<span class="mi">Better data, not a bigger model.</span>
+<span class="mi">Eight guardrails. Seven test angles. All passing.</span>
 <i class="dot"></i>
 </div>
   </div>
@@ -546,12 +572,12 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
   var d = document, root = d.documentElement;
   var rows = [].slice.call(d.querySelectorAll(".row")), panels = [].slice.call(d.querySelectorAll(".panel"));
   if (!rows.length) return;
-  var n = rows.length, SLIDE = 70, CAPOUT = 30, CAPIN = 240;
+  var n = rows.length, SLIDE = 70, CAPOUT = 30, CAPIN = 240, tbBottom = 12;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var frames = panels.map(function (p) { return p.querySelector(".frame"); });
   var caps = panels.map(function (p) { return p.querySelector(".cap"); });
   var vids = panels.map(function (p) { return p.querySelector("video"); });
-  var reel = d.querySelector(".reel"), showcase = d.querySelector(".showcase"), railFill = d.querySelector(".rail i"), curEl = d.getElementById("cur");
+  var tb = d.querySelector(".titleblock"), reel = d.querySelector(".reel"), showcase = d.querySelector(".showcase"), railFill = d.querySelector(".rail i"), curEl = d.getElementById("cur");
   var layout = root.getAttribute("data-layout");
   var cur = 0, ready = false, playTimer = 0, raf = 0, step = 1, rowh = 100, farUp = 2, farDn = 4, goal = -1, goalT = 0;
   var now = function () { return performance.now(); };
@@ -582,8 +608,36 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
     if (layout !== "reel") return;
     step = Math.max(1, (reel.offsetHeight - innerHeight) / Math.max(1, n - 1));
     rowh = rows[0].offsetHeight || 100;
+    // rows passing behind the pinned page title fade out before they reach it
+    tbBottom = root.getAttribute("data-tb") === "off" || getComputedStyle(tb).display === "none" ? 12 : tb.offsetTop + tb.offsetHeight + 12;
     var act = rows[0].offsetTop + rowh / 2, H = showcase.clientHeight;
-    farUp = (act - 12 - rowh * 0.3) / rowh; farDn = (H - act - 12 - rowh * 0.3) / rowh;
+    farUp = (act - tbBottom - rowh * 0.3) / rowh; farDn = (H - act - 12 - rowh * 0.3) / rowh;
+  }
+  // reel geometry from the viewport: active title 44 px at 1440 wide up to 84 px at 2560; index column + gap (<= 8% of the width) + stage (<= 1100 px) are one centred group.
+  // The CSS holds an estimate of all this; here the real width of the longest name is measured and the values are written on <html>.
+  var RV = ["--ts", "--sw", "--iw", "--gp", "--gl", "--tt"];
+  function layoutReel() {
+    var W = innerWidth, H = innerHeight, rs = root.style;
+    RV.forEach(function (v) { rs.removeProperty(v); });
+    var titles = rows.map(function (r) { return r.querySelector(".title"); }), fs0 = parseFloat(getComputedStyle(titles[0]).fontSize), widest = 1;
+    titles.forEach(function (t) { widest = Math.max(widest, t.offsetWidth); });
+    var emw = widest / fs0, T = clamp(44 + (W - 1440) * 0.0357, 28, 84), avail = W * 0.92, ts = T, sw = 600, hdr, mq;
+    for (var k = 0; k < 5; k++) {
+      hdr = ts * 0.77 + 40; mq = ts * 0.95;
+      sw = clamp(Math.min(1100, 0.44 * W, (H - hdr - mq - 24) / 0.8019), 360, 1100);
+      if ((emw + 1.5) * ts + 40 + sw <= avail) break;
+      ts = clamp(Math.min(T, (avail - 40 - sw) / (emw + 1.5)), 28, 84);
+    }
+    hdr = ts * 0.77 + 40;
+    var iw = (emw + 1.5) * ts, gp = clamp(avail - iw - sw, 24, 0.08 * W), gl = Math.max(W * 0.02, (W - iw - gp - sw) / 2);
+    rs.setProperty("--ts", ts.toFixed(2) + "px"); rs.setProperty("--sw", sw.toFixed(1) + "px"); rs.setProperty("--iw", iw.toFixed(1) + "px"); rs.setProperty("--gp", gp.toFixed(1) + "px"); rs.setProperty("--gl", gl.toFixed(1) + "px");
+    SLIDE = sw * 0.11; CAPOUT = sw * 0.047; CAPIN = sw * 0.38;
+    // the pinned page title: as large as fits above the first row's slot; smaller on short windows, hidden below 760 px of height
+    var actTop = 0.38 * H - hdr - ts * 1.1, ctH = Math.max(13, ts * 0.3) * 1.25, room = actTop - ts * 0.3 - 16, tt = ts * 1.1;
+    if (tt * 1.05 + ts * 0.15 + ctH > room) tt = (room - ts * 0.15 - ctH) / 1.05;
+    var off = H < 760 || tt < 22;
+    root.setAttribute("data-tb", off ? "off" : "on");
+    if (!off) rs.setProperty("--tt", tt.toFixed(1) + "px");
   }
   // the title size is fitted to the longest short name as the font actually sets it (the CSS value is only the first guess), never below 28 px
   function fit() {
@@ -615,8 +669,9 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
   function tick() { raf = 0; if (layout !== "reel") return; render(clamp(scrollY / step, 0, n - 1)); }
   function schedule() { if (!raf) raf = requestAnimationFrame(tick); }
   addEventListener("scroll", schedule, { passive: true });
-  addEventListener("resize", function () { fit(); measure(); schedule(); });
-  if (d.fonts && d.fonts.ready) d.fonts.ready.then(function () { fit(); measure(); schedule(); });
+  function refit() { if (layout === "reel") layoutReel(); else fit(); }
+  addEventListener("resize", function () { refit(); measure(); schedule(); });
+  if (d.fonts && d.fonts.ready) d.fonts.ready.then(function () { refit(); measure(); schedule(); });
   addEventListener("pageshow", function () { measure(); schedule(); });
 
   function goTo(i) {
@@ -680,10 +735,10 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
   function applyLayout() {
     if (window.__lay) window.__lay();
     var was = layout; layout = root.getAttribute("data-layout");
-    if (was === "reel" && layout !== "reel") clearInline();
+    if (was === "reel" && layout !== "reel") { clearInline(); RV.forEach(function (v) { root.style.removeProperty(v); }); root.removeAttribute("data-tb"); }
     if (layout === "stack") { vids.forEach(pause); observe(); }
     else { if (io) io.disconnect(); if (near) near.disconnect(); }
-    fit();
+    refit();
     if (layout === "reel") { measure(); tick(); } else { setActive(cur); }
     if (layout !== "stack" && ready) { clearTimeout(playTimer); play(vids[cur]); }
   }
@@ -691,7 +746,7 @@ html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(-
 
   // first state: the layout is already set; the scroll position may be a restored one (back button), so p is read right away
   setActive(0);
-  fit();
+  refit();
   if (layout === "reel") { measure(); tick(); }
   else if (layout === "stack") observe();
   // the active clip starts once the page is in
