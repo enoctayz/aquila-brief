@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-n="7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,6 +9,17 @@
 <link rel="icon" type="image/png" sizes="48x48" href="assets/icons/favicon-48.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
 <title>Enocta AI · Briefs</title>
+<script>
+// layout, decided before the first paint: "reel" (desktop, 2+ briefs, motion allowed: pinned, scroll-scrubbed), "static" (desktop, reduced motion or one brief), "stack" (narrow screens and no-JS)
+(function () {
+  var d = document.documentElement;
+  function lay() {
+    var big = matchMedia("(min-width: 1000px) and (min-height: 560px)").matches, rm = matchMedia("(prefers-reduced-motion: reduce)").matches, n = +d.getAttribute("data-n") || 1;
+    d.setAttribute("data-layout", !big ? "stack" : (rm || n < 2) ? "static" : "reel");
+  }
+  window.__lay = lay; lay();
+})();
+</script>
 <style>
 @font-face { font-family: "Poppins"; font-style: normal; font-weight: 700; font-display: swap; src: url("assets/fonts/poppins-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 @font-face { font-family: "Poppins"; font-style: normal; font-weight: 700; font-display: swap; src: url("assets/fonts/poppins-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
@@ -44,11 +55,15 @@
   --gap: clamp(32px, 4.5vw, 80px);
   --n: 7;
   --len: 27;
-  --dim: #9B9AA2; /* dimmed rows: AA (4.8:1) even over the strongest part of the glow */
+  --vh: 1vh;
+  --hdr: 74px;
+  --rowh: 100px;
+  --dim: #9B9AA2;
 }
+@supports (height: 1dvh) { :root { --vh: 1dvh; } }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { background: var(--ink); color-scheme: dark; -webkit-text-size-adjust: 100%; }
-body { position: relative; min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; background: var(--ink); color: #fff; font: 400 17px/1.5 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+html { background: var(--ink); color: #fff; color-scheme: dark; -webkit-text-size-adjust: 100%; }
+body { position: relative; min-height: 100vh; min-height: 100dvh; background: var(--ink); color: #fff; font: 400 17px/1.5 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 a { color: inherit; text-decoration: none; }
 :focus-visible { outline: 3px solid var(--pink); outline-offset: 6px; border-radius: 6px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -59,14 +74,17 @@ body::before { content: ""; position: fixed; inset: -25%; z-index: 0; pointer-ev
   background: radial-gradient(38% 42% at 72% 30%, rgba(203,31,71,.34), transparent 70%), radial-gradient(34% 40% at 18% 82%, rgba(151,22,39,.32), transparent 70%); }
 body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events: none; opacity: .075; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22180%22%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.85%22%20numOctaves%3D%222%22%20stitchTiles%3D%22stitch%22%2F%3E%3CfeColorMatrix%20values%3D%220%200%200%200%201%200%200%200%200%201%200%200%200%200%201%200%200%200%20.6%200%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23n)%22%2F%3E%3C%2Fsvg%3E"); background-size: 180px 180px; }
 .top, .showcase, .marquee { position: relative; z-index: 2; }
+.pin { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+.showcase { flex: 1 0 auto; }
 
 /* ---------- header ---------- */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px var(--pad) 18px; }
 .logo { display: block; height: 34px; width: auto; }
-.count { font: 500 13px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--grey3); }
-.count .n { color: #fff; }
+.count, .prog { font: 500 13px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--grey3); }
+.count .n, .prog .n { color: #fff; }
+.prog, .mark, .rail, .snaps { display: none; }
 
-/* ---------- stacked mode (narrow screens / short windows): a tall stack of full-width cards ---------- */
+/* ---------- stacked mode (narrow screens, short windows, no JS): a tall stack of full-width cards ---------- */
 .showcase { padding: 8px var(--pad) 28px; }
 .index { list-style: none; display: grid; gap: 18px; }
 .item { display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,.12); border-radius: 22px; overflow: hidden; background: rgba(255,255,255,.04); }
@@ -76,8 +94,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events
 .row { order: 1; position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "idx title" ". tag"; column-gap: 16px; row-gap: 12px; align-content: start; padding: 20px 20px 0; color: #fff; }
 .idx { grid-area: idx; align-self: start; padding-top: .9em; font: 500 14px/1 var(--mono); color: var(--pink); }
 .title { grid-area: title; font: 700 clamp(26px, 7.4vw, 40px)/1.08 var(--head); letter-spacing: -.02em; text-wrap: balance; }
-/* tiers b and c: at most two lines, then an ellipsis (the full name stays in the DOM, so the link's accessible name is complete);
-   tiers a and b (1-6 briefs) are sized from the longest short name (--len) so that every name fits on one line on the stage */
+/* tiers b and c (4 or more briefs): at most two lines, then an ellipsis (the full name stays in the DOM, so the link's accessible name is complete) */
 body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; line-height: 1.2; }
 .tag { grid-area: tag; font: 500 13px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--pink); overflow-wrap: anywhere; }
 @media (max-width: 520px) { .tag { letter-spacing: .03em; } }
@@ -90,8 +107,8 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 .open { display: inline-flex; align-items: center; gap: 8px; color: var(--pink); }
 .open svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform .25s ease; }
 
-/* ---------- marquee: tags and summaries, crimson dots ---------- */
-.marquee { overflow: hidden; border-top: 1px solid rgba(255,255,255,.12); padding: 13px 0; background: var(--ink); position: sticky; bottom: 0; }
+/* ---------- marquee: tags and summaries, crimson dots. Always opaque: nothing shows through it. ---------- */
+.marquee { overflow: hidden; border-top: 1px solid rgba(255,255,255,.12); padding: 13px 0; background: var(--ink); position: sticky; bottom: 0; z-index: 3; }
 .marquee::before, .marquee::after { content: ""; position: absolute; top: 0; bottom: 0; width: 7%; z-index: 1; pointer-events: none; }
 .marquee::before { left: 0; background: linear-gradient(90deg, var(--ink), rgba(24,24,26,0)); }
 .marquee::after { right: 0; background: linear-gradient(270deg, var(--ink), rgba(24,24,26,0)); }
@@ -102,59 +119,63 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 .mi.t { font: 500 13px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
 .dot { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--crimson); flex: none; }
 
-/* ---------- stage mode: exactly one viewport, index left, stage right ---------- */
-@media (min-width: 1000px) and (min-height: 560px) {
-  body { height: 100vh; height: 100dvh; overflow: hidden; }
-  .showcase { container-type: size; padding: 0 var(--pad) 22px; }
-  .index { --colw: calc((100cqw - var(--gap)) / 2 - 64px); --rowh: calc(100cqh / var(--n));
-    --ts: clamp(22px, min(96px, calc(var(--colw) / (0.5 * var(--len))), calc((100cqh / 3 - 64px) / 1.1)), 96px);
-    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(var(--n), minmax(0, 1fr)); height: 100%; gap: 0 var(--gap); }
-  /* tier b (4-6 briefs): the title is never smaller than 30 px; room comes from the padding and gaps, not from the title.
-     Per row: 1.2 x title + 11 px tag line + 4 px gap, leaving at least 28 px between a tag and the next title. */
-  body[data-tier="b"] .index { --ts: clamp(30px, min(44px, calc(var(--colw) / (0.5 * var(--len))), calc((var(--rowh) - 51px) / 1.2)), 44px); }
-  body[data-tier="b"] .showcase { padding-top: 24px; padding-bottom: 24px; } /* 24 + the centred row slack: >= 40 px under the header, >= 24 px above the marquee */
-  body[data-tier="c"] .index { --ts: clamp(26px, 2.6vw, 40px); }
-  .item { display: contents; }
-  .row { grid-column: 1; align-self: stretch; align-content: center; padding: 0 0 0 26px; border-top: 1px solid rgba(255,255,255,.12); color: var(--dim); transition: color .35s ease; }
-  .item:first-child .row { border-top: 0; }
-  .row::before { content: ""; position: absolute; left: 0; top: 24%; bottom: 24%; width: 4px; border-radius: 2px; background: var(--crimson); transform: scaleY(0); transition: transform .35s ease; }
-  .row.is-active { color: #fff; }
-  .row.is-active::before { transform: scaleY(1); }
-  .idx { color: var(--dim); transition: color .35s ease; padding-top: calc(var(--ts) * .2); }
-  .title { font-size: var(--ts); line-height: 1.04; }
-  body[data-tier="b"] .title, body[data-tier="c"] .title { line-height: 1.2; }
-  body[data-tier="b"] .row { row-gap: 4px; }
-  body[data-tier="b"] .tag { font-size: 11px; line-height: 1.3; }
-  .tag { color: var(--dim); transition: color .35s ease; }
-  .row.is-active .idx, .row.is-active .tag { color: var(--pink); }
+/* ---------- desktop, shared by "static" and "reel" ---------- */
+html[data-layout="static"] .showcase, html[data-layout="reel"] .showcase { --cw: calc((100cqw - var(--gap)) / 2); --ts: clamp(28px, min(56px, calc((var(--cw) - 40px) / (0.48 * var(--len)))), 56px); }
+html[data-layout="static"] .item, html[data-layout="reel"] .item { display: contents; }
+html[data-layout="static"] .row, html[data-layout="reel"] .row { color: #fff; }
+html[data-layout="static"] .idx, html[data-layout="reel"] .idx { color: var(--grey3); padding-top: calc(var(--ts) * .2); }
+html[data-layout="static"] .tag, html[data-layout="reel"] .tag { color: var(--grey3); font-size: 12px; line-height: 1.3; }
+html[data-layout="static"] .row.is-active .idx, html[data-layout="static"] .row.is-active .tag,
+html[data-layout="reel"] .row.is-active .idx, html[data-layout="reel"] .row.is-active .tag { color: var(--pink); }
+html[data-layout="static"] .title, html[data-layout="reel"] .title { font-size: var(--ts); line-height: 1.1; white-space: nowrap; display: block; overflow: visible; width: max-content; justify-self: start; }
+html[data-layout="static"] .row, html[data-layout="reel"] .row { row-gap: 2px; }
+html[data-layout="static"] .frame, html[data-layout="reel"] .frame { border-radius: clamp(18px, 2vw, 28px); box-shadow: 0 30px 80px -30px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.1); }
+html[data-layout="static"] .summary, html[data-layout="reel"] .summary { font-size: clamp(18px, 1.55vw, 22px); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+html[data-layout="static"] .cap, html[data-layout="reel"] .cap { padding: 0; margin-top: 18px; gap: 10px; }
+html[data-layout="static"] .frame { transition: box-shadow .25s ease; }
+.panel:hover .frame { box-shadow: 0 30px 80px -30px rgba(0,0,0,.85), 0 0 0 2px var(--crimson); }
+.panel:hover .open svg { transform: translateX(5px); }
+.panel:hover .open span { text-decoration: underline; text-underline-offset: 4px; }
 
-  .panel { display: flex; flex-direction: column; grid-column: 2; grid-row: 1 / -1; align-self: center; justify-self: start; width: min(100%, calc((100cqh - 140px) * 16 / 9)); opacity: 0; visibility: hidden; transition: opacity .55s ease, visibility 0s linear .55s; }
-  .panel.is-active { opacity: 1; visibility: visible; transition: opacity .55s ease; }
-  .panel.is-active .frame { view-transition-name: brief-film; }
-  .frame { border-radius: clamp(18px, 2vw, 28px); box-shadow: 0 30px 80px -30px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.1); }
-  .cap { padding: 0; margin-top: 20px; gap: 14px; }
-  .summary { font-size: clamp(18px, 1.55vw, 24px); }
-  .panel:hover .open svg { transform: translateX(5px); }
-  .panel:hover .open span { text-decoration: underline; text-underline-offset: 4px; }
+/* ---------- static desktop (reduced motion, or a single brief): a plain list, the stage follows hover and focus, posters only ---------- */
+html[data-layout="static"] .index { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(var(--n), auto); column-gap: var(--gap); align-content: start; gap: 0 var(--gap); }
+html[data-layout="static"] .showcase { container-type: inline-size; padding: 0 var(--pad) 24px; }
+html[data-layout="static"] .row { grid-column: 1; min-height: 100px; align-content: center; padding: 12px 0 12px 26px; border-top: 1px solid rgba(255,255,255,.12); }
+html[data-layout="static"] .item:first-child .row { border-top: 0; }
+html[data-layout="static"] .row::before { content: ""; position: absolute; left: 0; top: 24%; bottom: 24%; width: 4px; border-radius: 2px; background: var(--crimson); opacity: 0; }
+html[data-layout="static"] .row.is-active::before { opacity: 1; }
+html[data-layout="static"] .row:not(.is-active) .title { color: var(--dim); }
+html[data-layout="static"] .row:hover .title { color: #fff; text-decoration: underline; text-decoration-color: var(--crimson); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+html[data-layout="static"] .panel { display: flex; flex-direction: column; grid-column: 2; grid-row: 1 / -1; position: sticky; top: 24px; align-self: start; width: 100%; opacity: 0; visibility: hidden; }
+html[data-layout="static"] .panel.is-active { opacity: 1; visibility: visible; }
+html[data-n="1"][data-layout="static"] .index { min-height: calc(100 * var(--vh) - var(--hdr) - 44px - 24px); align-content: center; }
 
-  .marquee { position: relative; background: rgba(24,24,26,.55); }
-  .marquee::before { background: linear-gradient(90deg, rgba(24,24,26,.9), rgba(24,24,26,0)); }
-  .marquee::after { background: linear-gradient(270deg, rgba(24,24,26,.9), rgba(24,24,26,0)); }
-  /* 7 or more briefs: normal scrolling list on the left, sticky stage on the right. The active row follows the scroll position
-     proportionally (script): row 1 at the top, the last row at the bottom, every row in between reachable by scrolling alone.
-     Rows are compact (about 124 px) so that six or more are visible at 1440x900. The marquee is opaque here: rows scroll under it. */
-  body[data-mode="scroll"] { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; overflow-x: hidden; }
-  body[data-mode="scroll"] .showcase { container-type: normal; padding: 0 var(--pad) 16px; }
-  body[data-mode="scroll"] .index { container-type: inline-size; grid-template-rows: repeat(var(--n), auto); height: auto; }
-  body[data-mode="scroll"] .row { min-height: 124px; padding-block: 14px; row-gap: 2px; }
-  body[data-mode="scroll"] .tag { line-height: 1.3; }
-  body[data-mode="scroll"] .panel { position: sticky; align-self: start; justify-self: stretch; width: 100%; --pw: calc((100cqw - var(--gap)) / 2); top: max(16px, calc((100vh - 42px - var(--pw) * 9 / 16 - 130px) / 2)); top: max(16px, calc((100dvh - 42px - var(--pw) * 9 / 16 - 130px) / 2)); }
-  body[data-mode="scroll"] .marquee { position: sticky; bottom: 0; z-index: 3; background: var(--ink); animation: none; }
-  body[data-mode="scroll"] .marquee::before { background: linear-gradient(90deg, var(--ink), rgba(24,24,26,0)); }
-  body[data-mode="scroll"] .marquee::after { background: linear-gradient(270deg, var(--ink), rgba(24,24,26,0)); }
-  .frame { transition: box-shadow .25s ease; }
-  .panel:hover .frame { box-shadow: 0 30px 80px -30px rgba(0,0,0,.85), 0 0 0 2px var(--crimson); }
-}
+/* ---------- reel (desktop, 2+ briefs): the layout is pinned inside a tall scroll container, scrolling scrubs through the briefs ----------
+   Each brief gets 55vh of scroll distance. Native scrolling only. The script writes transform and opacity from the scroll position (rAF). */
+/* proximity snapping: Chrome snaps to the nearest brief when the scroll ends within about a third of the snapport. The snapport is shrunk with scroll-padding
+   (the anchors below are moved down by the same amount), so a single wheel notch is not pulled back, but a position close to a brief still rests on it. */
+html[data-layout="reel"] { scroll-snap-type: y proximity; scroll-padding-block: 40vh; scroll-padding-block: 40dvh; }
+html[data-layout="reel"] .reel { position: relative; height: calc((100 + (var(--n) - 1) * 55) * var(--vh)); }
+html[data-layout="reel"] .pin { position: sticky; top: 0; height: calc(100 * var(--vh)); min-height: 0; display: grid; grid-template-rows: var(--hdr) minmax(0, 1fr) auto; overflow: hidden; }
+html[data-layout="reel"] .top { height: var(--hdr); padding-block: 0; }
+html[data-layout="reel"] .count { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+html[data-layout="reel"] .prog { display: block; }
+html[data-layout="reel"] .showcase { container-type: size; padding: 0 var(--pad); overflow: hidden; --act: calc(38 * var(--vh) - var(--hdr)); --pw: min(var(--cw), calc((100cqh - 170px) * 16 / 9)); }
+html[data-layout="reel"] .index { position: absolute; inset: 0; display: block; }
+html[data-layout="reel"] .row { position: absolute; left: var(--pad); width: var(--cw); top: calc(var(--act) - var(--rowh) / 2); height: var(--rowh); padding: 0 0 0 26px; align-content: center; transform-origin: 0 50%; opacity: 0; will-change: transform, opacity; animation: none !important; }
+html[data-layout="reel"] .row::after { content: ""; position: absolute; inset: 6px -14px 6px 8px; border-radius: 14px; background: rgba(255,255,255,.06); opacity: 0; pointer-events: none; }
+html[data-layout="reel"] .row:hover::after { opacity: 1; }
+html[data-layout="reel"] .row:hover .title { text-decoration: underline; text-decoration-color: var(--crimson); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+html[data-layout="reel"] .mark { display: block; position: absolute; z-index: 1; left: var(--pad); top: calc(var(--act) - 30px); height: 60px; width: 4px; border-radius: 2px; background: var(--crimson); pointer-events: none; }
+html[data-layout="reel"] .panel { display: block; position: absolute; pointer-events: none; left: calc(var(--pad) + var(--cw) + var(--gap)); width: var(--pw); top: max(12px, calc((100cqh - var(--pw) * 9 / 16 - 152px) / 2)); height: calc(var(--pw) * 9 / 16 + 152px); }
+html[data-layout="reel"] .panel.is-active { z-index: 1; }
+html[data-layout="reel"] .frame { pointer-events: auto; opacity: 0; visibility: hidden; will-change: transform, opacity; animation: none !important; }
+html[data-layout="reel"] .cap { pointer-events: auto; height: 134px; opacity: 0; visibility: hidden; will-change: transform, opacity; animation: none !important; }
+html[data-layout="reel"] .marquee { position: relative; bottom: auto; }
+html[data-layout="reel"] .rail { display: block; position: absolute; z-index: 3; right: calc(var(--pad) / 2 - 1px); top: calc(var(--hdr) + 20px); bottom: 64px; width: 2px; border-radius: 1px; background: rgba(255,255,255,.16); overflow: hidden; }
+html[data-layout="reel"] .rail i { display: block; width: 100%; height: 100%; background: var(--crimson); transform-origin: 0 0; transform: scaleY(0); will-change: transform; }
+html[data-layout="reel"] .snaps { display: block; position: absolute; inset: 0; pointer-events: none; }
+html[data-layout="reel"] .snaps i { position: absolute; left: 0; top: calc(var(--k) * 55 * var(--vh) + 40 * var(--vh)); width: 1px; height: 1px; scroll-snap-align: start; }
 
 /* ---------- motion (skipped entirely with prefers-reduced-motion) ---------- */
 @media (prefers-reduced-motion: no-preference) {
@@ -162,18 +183,15 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
   .track { animation: scroll 309s linear infinite; }
   .marquee:hover .track { animation-play-state: paused; }
   .logo, .count { animation: fade .45s ease both; }
-  .item .row { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.25s + var(--i) * .6s / var(--n)); }
-  .panel.intro .frame { animation: scalein .6s cubic-bezier(.2,.7,.2,1) both .7s; }
-  .panel.intro .cap { animation: fade .45s ease both 1s; }
+  html:not([data-layout="reel"]) .item .row { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.25s + var(--i) * .6s / var(--n)); }
   .marquee { animation: fade .6s ease both 1s; }
 }
 @keyframes glow { from { transform: translate3d(-3%, -2%, 0) scale(1); } to { transform: translate3d(4%, 3%, 0) scale(1.12); } }
 @keyframes scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rise { from { opacity: 0; transform: translate3d(0, 28px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
-@keyframes scalein { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }
 
@@ -181,21 +199,28 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 @media print {
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   html, body { background: #fff; color: #18181A; height: auto; overflow: visible; display: block; }
-  body::before, body::after, .marquee, .frame { display: none !important; }
-  .top { padding: 0 0 12px; } .logo { filter: invert(1); }
-  .count { color: #4A4A50; } .count .n { color: #18181A; }
-  .showcase { padding: 0; } .item { background: none; border-color: #D9D6DA; break-inside: avoid; }
-  .row, .row.is-active { color: #18181A; } .idx, .tag, .open { color: #971627; } .summary, .dur { color: #18181A; } .filmlen { color: #4A4A50; }
+  body::before, body::after, .marquee, .frame, .rail, .mark, .prog, .snaps { display: none !important; }
+  .reel, .pin { position: static !important; height: auto !important; display: block !important; }
+  .top { padding: 0 0 12px; height: auto !important; } .logo { filter: invert(1); }
+  .count { color: #4A4A50; position: static !important; width: auto !important; height: auto !important; clip: auto !important; } .count .n { color: #18181A; }
+  .showcase { padding: 0; } .item { display: flex !important; background: none; border-color: #D9D6DA; break-inside: avoid; }
+  .index { position: static !important; display: grid !important; }
+  .row, .row.is-active { position: relative !important; opacity: 1 !important; transform: none !important; width: auto !important; height: auto !important; left: auto !important; top: auto !important; color: #18181A; } .idx, .tag, .open { color: #971627 !important; } .summary, .dur { color: #18181A; } .filmlen { color: #4A4A50; }
+  .panel { display: contents !important; position: static !important; } .cap { opacity: 1 !important; visibility: visible !important; height: auto !important; }
 }
 </style>
 </head>
-<body data-mode="scroll" data-tier="c">
+<body data-tier="c">
+<div class="reel">
+<div class="pin">
 <header class="top">
   <img class="logo" src="assets/enocta-logo.png" alt="Enocta" width="415" height="255">
   <p class="count"><span class="n">07</span> <span>briefs</span></p>
+  <p class="prog" aria-hidden="true"><span class="n" id="cur">01</span> / 07</p>
 </header>
 <main class="showcase">
   <h1 class="sr">Enocta AI · Briefs</h1>
+  <span class="mark" aria-hidden="true"></span>
   <ul class="index" role="list">
     <li class="item" role="listitem" style="--i:0">
       <a class="row is-active" href="eci/" aria-current="true" aria-describedby="sum-eci" data-slug="eci">
@@ -360,6 +385,7 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
     </li>
   </ul>
 </main>
+<div class="rail" aria-hidden="true"><i></i></div>
 <div class="marquee" aria-hidden="true">
   <div class="track">
 <div class="half">
@@ -512,141 +538,164 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 </div>
   </div>
 </div>
+</div>
+<div class="snaps" aria-hidden="true"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i><i style="--k:5"></i><i style="--k:6"></i></div>
+</div>
 <script>
 (function () {
   var d = document, root = d.documentElement;
   var rows = [].slice.call(d.querySelectorAll(".row")), panels = [].slice.call(d.querySelectorAll(".panel"));
   if (!rows.length) return;
+  var n = rows.length, SLIDE = 70, CAPOUT = 30, CAPIN = 240;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var stage = matchMedia("(min-width: 1000px) and (min-height: 560px)");
-  var scrollMode = d.body.getAttribute("data-mode") === "scroll"; // 7 or more briefs: the page scrolls and the stage is sticky
   var frames = panels.map(function (p) { return p.querySelector(".frame"); });
+  var caps = panels.map(function (p) { return p.querySelector(".cap"); });
   var vids = panels.map(function (p) { return p.querySelector("video"); });
-  var cur = 0, ready = false, autoTimer = null, stopped = scrollMode, manualUntil = 0, playTimer = 0;
+  var reel = d.querySelector(".reel"), showcase = d.querySelector(".showcase"), railFill = d.querySelector(".rail i"), curEl = d.getElementById("cur");
+  var layout = root.getAttribute("data-layout");
+  var cur = 0, ready = false, playTimer = 0, raf = 0, step = 1, rowh = 100, farUp = 2, farDn = 4, goal = -1, goalT = 0;
   var now = function () { return performance.now(); };
+  var clamp = function (v, a, b) { return v < a ? a : v > b ? b : v; };
+  var pad2 = function (v) { return (v < 10 ? "0" : "") + v; };
 
-  function play(v) { if (!v || reduce) return; try { var p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+  function play(v) { if (!v || reduce) return; try { v.preload = "auto"; var p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
   function pause(v) { try { if (v) v.pause(); } catch (e) {} }
-  // only the first few briefs ship their poster; the others fetch it when they become active or come near the viewport
+  // only the first few briefs ship their poster; the others fetch it when they come next to the active one or near the viewport
   function loadPoster(i) { var v = vids[i]; if (v && !v.getAttribute("poster") && v.getAttribute("data-poster")) v.setAttribute("poster", v.getAttribute("data-poster")); }
-  function syncVideos() {
-    vids.forEach(function (v, i) { if (stage.matches) { if (ready && i === cur) play(v); else pause(v); } });
-  }
+
   function setActive(i) {
     loadPoster(i); loadPoster(i + 1); loadPoster(i - 1);
     if (i === cur && rows[i].classList.contains("is-active")) return;
-    var old = cur; cur = i;
+    cur = i;
     rows.forEach(function (r, k) { r.classList.toggle("is-active", k === i); if (k === i) r.setAttribute("aria-current", "true"); else r.removeAttribute("aria-current"); });
     panels.forEach(function (p, k) { p.classList.toggle("is-active", k === i); });
-    if (stage.matches) {
-      // the clip starts only if the brief is still active a moment later, so scrubbing past many rows never loads their clips
+    if (curEl) curEl.textContent = pad2(i + 1);
+    if (layout !== "stack") {
+      // only the active clip plays; it starts if the brief is still active a moment later, so scrubbing past many briefs never loads their clips
+      vids.forEach(function (v, k) { if (k !== i) pause(v); });
       clearTimeout(playTimer); playTimer = setTimeout(function () { if (ready && cur === i) play(vids[i]); }, 260);
-      setTimeout(function () { if (cur !== old) pause(vids[old]); }, 650);
     }
   }
-  function stopAuto() { stopped = true; if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
-  function startAuto() {
-    if (reduce || stopped || autoTimer) return;
-    autoTimer = setInterval(function () { if (stopped || !stage.matches || d.hidden) return; setActive((cur + 1) % rows.length); }, 6000);
+
+  // ---------- reel: everything below is driven by the scroll position p = scrollY / step, 0 .. n - 1 ----------
+  function measure() {
+    if (layout !== "reel") return;
+    step = Math.max(1, (reel.offsetHeight - innerHeight) / Math.max(1, n - 1));
+    rowh = rows[0].offsetHeight || 100;
+    var act = rows[0].offsetTop + rowh / 2, H = showcase.clientHeight;
+    farUp = (act - 12 - rowh * 0.3) / rowh; farDn = (H - act - 12 - rowh * 0.3) / rowh;
   }
+  // the title size is fitted to the longest short name as the font actually sets it (the CSS value is only the first guess), never below 28 px
+  function fit() {
+    if (layout === "stack") return;
+    showcase.style.removeProperty("--ts");
+    var titles = rows.map(function (r) { return r.querySelector(".title"); }), widest = 1;
+    titles.forEach(function (t) { widest = Math.max(widest, t.offsetWidth); });
+    var r0 = rows[0], avail = r0.clientWidth - 26 - r0.querySelector(".idx").offsetWidth - 16 - 2;
+    var cur = parseFloat(getComputedStyle(titles[0]).fontSize);
+    showcase.style.setProperty("--ts", clamp(cur * avail / widest, 28, 56).toFixed(2) + "px");
+  }
+  function render(p) {
+    var ci = Math.round(p);
+    if (ci !== cur || !rows[ci].classList.contains("is-active")) setActive(ci);
+    for (var i = 0; i < n; i++) {
+      var dd = i - p, a = Math.abs(dd), far = dd < 0 ? farUp : farDn;
+      var s = a <= 1 ? 1 - 0.2 * a : Math.max(0.6, 0.8 - 0.06 * (a - 1));
+      var o = (a <= 1 ? 1 - 0.38 * a : Math.max(0.25, 0.62 - 0.08 * (a - 1))) * clamp((far - a) / 0.9, 0, 1);
+      var r = rows[i], rs = r.style;
+      rs.transform = "translate3d(0," + (dd * rowh).toFixed(2) + "px,0) scale(" + s.toFixed(4) + ")";
+      rs.opacity = o < 0.01 ? "0" : o.toFixed(3);
+      rs.pointerEvents = o < 0.05 ? "none" : "";
+      var f = Math.max(0, 1 - a), fs = frames[i].style, cs = caps[i].style, vis = f > 0.004 ? "visible" : "hidden";
+      fs.transform = "translate3d(0," + (dd * SLIDE).toFixed(2) + "px,0)"; fs.opacity = f.toFixed(3); fs.visibility = vis;
+      cs.transform = "translate3d(0," + (dd * (dd < 0 ? CAPOUT : CAPIN)).toFixed(2) + "px,0)"; cs.opacity = (f > 0 ? clamp(0.5 + (0.5 - a) * 4, 0, 1) : 0).toFixed(3); cs.visibility = vis;
+    }
+    railFill.style.transform = "scaleY(" + (n > 1 ? p / (n - 1) : 0).toFixed(4) + ")";
+  }
+  function tick() { raf = 0; if (layout !== "reel") return; render(clamp(scrollY / step, 0, n - 1)); }
+  function schedule() { if (!raf) raf = requestAnimationFrame(tick); }
+  addEventListener("scroll", schedule, { passive: true });
+  addEventListener("resize", function () { fit(); measure(); schedule(); });
+  if (d.fonts && d.fonts.ready) d.fonts.ready.then(function () { fit(); measure(); schedule(); });
+  addEventListener("pageshow", function () { measure(); schedule(); });
+
+  function goTo(i) {
+    i = clamp(i, 0, n - 1); goal = i; goalT = now() + 800;
+    scrollTo({ top: Math.round(i * step), behavior: reduce ? "auto" : "smooth" });
+  }
+  var base = function () { return now() < goalT ? goal : cur; };
 
   rows.forEach(function (r, i) {
-    if (scrollMode) {
-      // while the list scrolls under a parked pointer the browser fires synthetic enters; only real pointer movement counts
-      r.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse" && stage.matches && (e.movementX || e.movementY)) { manualUntil = now() + 600; setActive(i); } });
-    } else {
-      r.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse" && stage.matches) { stopAuto(); setActive(i); } });
-    }
-    r.addEventListener("focus", function () {
-      if (!stage.matches) return;
-      stopAuto(); manualUntil = now() + 1200; setActive(i);
-      if (scrollMode) { keyUntil = now() + 1200; scrollToRow(i, true); }
+    r.addEventListener("pointermove", function (e) { if (layout === "static" && e.pointerType === "mouse" && (e.movementX || e.movementY)) setActive(i); }); // real pointer movement only: a list scrolling under a parked pointer does not count // hover follows the stage only in the static layout; in the reel the scroll owns the active brief
+    r.addEventListener("focus", function () { if (layout === "static") setActive(i); else if (layout === "reel") goTo(i); });
+    r.addEventListener("click", function (e) {
+      if (layout !== "reel" || e.detail === 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button) return; // Enter (detail 0) and modifier clicks open the brief
+      if (i === cur && now() >= goalT) return; // the brief already in place: open it
+      e.preventDefault(); goTo(i);
     });
   });
-  var ix = d.querySelector(".index");
-  ix.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") stopAuto(); });
-  d.addEventListener("touchstart", stopAuto, { passive: true });
-  d.addEventListener("focusin", stopAuto);
 
-  // Up / Down move between rows; only while a row has focus (or the page cannot scroll), so scrolling is never hijacked
   d.addEventListener("keydown", function (e) {
-    if ((e.key !== "ArrowDown" && e.key !== "ArrowUp") || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    var k = e.key;
+    if (k !== "ArrowDown" && k !== "ArrowUp" && k !== "Home" && k !== "End") return;
     var onRow = rows.indexOf(d.activeElement) >= 0;
-    var fixed = d.scrollingElement && d.scrollingElement.scrollHeight <= innerHeight + 1;
-    if (!onRow && !(stage.matches && fixed && (d.activeElement === d.body || !d.activeElement))) return;
-    e.preventDefault(); stopAuto();
-    var next = (cur + (e.key === "ArrowDown" ? 1 : -1) + rows.length) % rows.length;
-    manualUntil = now() + 1200;
-    if (scrollMode && stage.matches) { keyUntil = now() + 1200; rows[next].focus({ preventScroll: true }); scrollToRow(next, true); }
-    else rows[next].focus();
-    setActive(next);
+    if (layout === "reel") {
+      if (d.activeElement && !onRow && d.activeElement !== d.body && d.activeElement.tagName !== "A") return;
+      e.preventDefault();
+      var next = k === "Home" ? 0 : k === "End" ? n - 1 : clamp(base() + (k === "ArrowDown" ? 1 : -1), 0, n - 1);
+      if (onRow) rows[next].focus({ preventScroll: true });
+      goTo(next);
+    } else if (layout === "static" && (k === "ArrowDown" || k === "ArrowUp") && onRow) {
+      e.preventDefault(); rows[(cur + (k === "ArrowDown" ? 1 : -1) + n) % n].focus();
+    }
   });
-
-  // 7+ briefs: proportional mapping. Every row owns an equal share of the scroll range: active = round(scrollY / maxScroll * (n - 1)).
-  // If the page does not scroll at all, hover, focus and the arrow keys alone drive the active row (row 1 on load).
-  function maxScroll() { return Math.max(0, d.documentElement.scrollHeight - innerHeight); }
-  function pick() {
-    var m = maxScroll();
-    if (!stage.matches || m <= 1) return;
-    setActive(Math.max(0, Math.min(rows.length - 1, Math.round(Math.min(1, scrollY / m) * (rows.length - 1)))));
-  }
-  function scrollToRow(i, smooth) { // the scroll position that makes row i the proportional pick
-    var m = maxScroll(); if (m <= 1 || !stage.matches) return;
-    scrollTo({ top: Math.round(m * i / (rows.length - 1)), behavior: smooth && !reduce ? "smooth" : "auto" });
-  }
-  var keyUntil = 0, pickTimer = 0;
-  if (scrollMode) {
-    var onScroll = function () {
-      // a scroll made by a key or focus change is ours; the scroll position is read again once it is over
-      if (now() < keyUntil) { clearTimeout(pickTimer); pickTimer = setTimeout(pick, keyUntil - now() + 40); return; }
-      pick();
-    };
-    addEventListener("scroll", onScroll, { passive: true });
-    addEventListener("resize", pick);
-    if (scrollY > 0) pick(); // reloaded part-way down
-  }
 
   // shared-element view transition: the clicked brief's frame carries the same name as the film on the brief page
   d.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a.row, a.panel");
-    if (!a) return;
+    if (!a || e.defaultPrevented) return;
     frames.forEach(function (f) { f.style.viewTransitionName = "none"; });
     var i = rows.map(function (r) { return r.getAttribute("data-slug"); }).indexOf(a.getAttribute("data-slug"));
     if (i >= 0) frames[i].style.viewTransitionName = "brief-film";
   });
-  // coming back from a brief: make that brief the active one before the page is revealed
-  addEventListener("pagereveal", function () {
-    try {
-      var from = window.navigation && navigation.activation && navigation.activation.from && navigation.activation.from.url;
-      if (!from) return;
-      var path = new URL(from).pathname;
-      rows.forEach(function (r, i) { if (path.indexOf("/" + r.getAttribute("data-slug") + "/") >= 0) { setActive(i); stopAuto(); frames[i].style.viewTransitionName = "brief-film"; if (scrollMode) scrollToRow(i, false); } });
-    } catch (e) {}
-  });
 
   // stacked mode: each clip plays only while its card is on screen; posters load as the cards come near
   var io = null, near = null;
-  function loadAllPosters() { vids.forEach(function (v, i) { loadPoster(i); }); }
   function observe() {
     if (io) io.disconnect();
     if (near) near.disconnect();
-    if (!("IntersectionObserver" in window)) { loadAllPosters(); return; }
+    if (!("IntersectionObserver" in window)) { vids.forEach(function (v, i) { loadPoster(i); }); return; }
     near = new IntersectionObserver(function (es) {
-      es.forEach(function (en) { if (!stage.matches && en.isIntersecting) loadPoster(frames.indexOf(en.target)); });
+      es.forEach(function (en) { if (layout === "stack" && en.isIntersecting) loadPoster(frames.indexOf(en.target)); });
     }, { rootMargin: "700px 0px" });
     frames.forEach(function (f) { near.observe(f); });
     if (reduce) return;
     io = new IntersectionObserver(function (es) {
-      es.forEach(function (en) { if (stage.matches) return; var v = en.target.querySelector("video"); if (en.isIntersecting) play(v); else pause(v); });
+      es.forEach(function (en) { if (layout !== "stack") return; var v = en.target.querySelector("video"); if (en.isIntersecting) play(v); else pause(v); });
     }, { threshold: 0.5 });
     frames.forEach(function (f) { io.observe(f); });
   }
-  function stopAutoSoft() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
-  function onMode() { syncVideos(); if (stage.matches) { if (io) io.disconnect(); if (near) near.disconnect(); startAuto(); } else { stopAutoSoft(); observe(); } }
-  if (stage.addEventListener) stage.addEventListener("change", onMode);
+  function clearInline() { rows.concat(frames, caps).forEach(function (el) { el.removeAttribute("style"); }); railFill.removeAttribute("style"); }
+  function applyLayout() {
+    if (window.__lay) window.__lay();
+    var was = layout; layout = root.getAttribute("data-layout");
+    if (was === "reel" && layout !== "reel") clearInline();
+    if (layout === "stack") { vids.forEach(pause); observe(); }
+    else { if (io) io.disconnect(); if (near) near.disconnect(); }
+    fit();
+    if (layout === "reel") { measure(); tick(); } else { setActive(cur); }
+    if (layout !== "stack" && ready) { clearTimeout(playTimer); play(vids[cur]); }
+  }
+  ["(min-width: 1000px) and (min-height: 560px)", "(prefers-reduced-motion: reduce)"].forEach(function (q) { var m = matchMedia(q); if (m.addEventListener) m.addEventListener("change", applyLayout); });
 
-  // load sequence (about 1.2 s) is CSS; the active clip starts when the stage frame is in
-  setTimeout(function () { ready = true; syncVideos(); if (!stage.matches) observe(); else startAuto(); }, reduce ? 0 : 1150);
+  // first state: the layout is already set; the scroll position may be a restored one (back button), so p is read right away
+  setActive(0);
+  fit();
+  if (layout === "reel") { measure(); tick(); }
+  else if (layout === "stack") observe();
+  // the active clip starts once the page is in
+  setTimeout(function () { ready = true; if (layout === "stack") observe(); else play(vids[cur]); }, reduce ? 0 : 1150);
 })();
 </script>
 </body>
