@@ -42,7 +42,7 @@
   --maxw: 2000px; /* content never gets wider than this: on bigger screens the side padding grows instead */
   --pad: max(clamp(18px, 3.2vw, 48px), calc((100vw - var(--maxw)) / 2));
   --gap: clamp(32px, 4.5vw, 80px);
-  --n: 6;
+  --n: 7;
   --len: 27;
   --dim: #9B9AA2; /* dimmed rows: AA (4.8:1) even over the strongest part of the glow */
 }
@@ -140,14 +140,18 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
   .marquee { position: relative; background: rgba(24,24,26,.55); }
   .marquee::before { background: linear-gradient(90deg, rgba(24,24,26,.9), rgba(24,24,26,0)); }
   .marquee::after { background: linear-gradient(270deg, rgba(24,24,26,.9), rgba(24,24,26,0)); }
-  /* 7 or more briefs: normal scrolling list on the left, sticky stage on the right, the row nearest the middle is active.
-     The last grid row is empty space: it lets the final row reach the middle and keeps the stage sticky to the very end. */
+  /* 7 or more briefs: normal scrolling list on the left, sticky stage on the right. The active row follows the scroll position
+     proportionally (script): row 1 at the top, the last row at the bottom, every row in between reachable by scrolling alone.
+     Rows are compact (about 124 px) so that six or more are visible at 1440x900. The marquee is opaque here: rows scroll under it. */
   body[data-mode="scroll"] { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; overflow-x: hidden; }
-  body[data-mode="scroll"] .showcase { container-type: normal; padding: 0 var(--pad); }
-  body[data-mode="scroll"] .index { container-type: inline-size; grid-template-rows: repeat(var(--n), auto) 46vh; grid-template-rows: repeat(var(--n), auto) 46dvh; height: auto; }
-  body[data-mode="scroll"] .row { min-height: 20vh; min-height: 20dvh; padding-block: 18px; }
+  body[data-mode="scroll"] .showcase { container-type: normal; padding: 0 var(--pad) 16px; }
+  body[data-mode="scroll"] .index { container-type: inline-size; grid-template-rows: repeat(var(--n), auto); height: auto; }
+  body[data-mode="scroll"] .row { min-height: 124px; padding-block: 14px; row-gap: 2px; }
+  body[data-mode="scroll"] .tag { line-height: 1.3; }
   body[data-mode="scroll"] .panel { position: sticky; align-self: start; justify-self: stretch; width: 100%; --pw: calc((100cqw - var(--gap)) / 2); top: max(16px, calc((100vh - 42px - var(--pw) * 9 / 16 - 130px) / 2)); top: max(16px, calc((100dvh - 42px - var(--pw) * 9 / 16 - 130px) / 2)); }
-  body[data-mode="scroll"] .marquee { position: sticky; bottom: 0; }
+  body[data-mode="scroll"] .marquee { position: sticky; bottom: 0; z-index: 3; background: var(--ink); animation: none; }
+  body[data-mode="scroll"] .marquee::before { background: linear-gradient(90deg, var(--ink), rgba(24,24,26,0)); }
+  body[data-mode="scroll"] .marquee::after { background: linear-gradient(270deg, var(--ink), rgba(24,24,26,0)); }
   .frame { transition: box-shadow .25s ease; }
   .panel:hover .frame { box-shadow: 0 30px 80px -30px rgba(0,0,0,.85), 0 0 0 2px var(--crimson); }
 }
@@ -155,7 +159,7 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 /* ---------- motion (skipped entirely with prefers-reduced-motion) ---------- */
 @media (prefers-reduced-motion: no-preference) {
   body::before { animation: glow 26s ease-in-out infinite alternate; }
-  .track { animation: scroll 305s linear infinite; }
+  .track { animation: scroll 309s linear infinite; }
   .marquee:hover .track { animation-play-state: paused; }
   .logo, .count { animation: fade .45s ease both; }
   .item .row { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.25s + var(--i) * .6s / var(--n)); }
@@ -185,22 +189,45 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 }
 </style>
 </head>
-<body data-mode="stage" data-tier="b">
+<body data-mode="scroll" data-tier="c">
 <header class="top">
   <img class="logo" src="assets/enocta-logo.png" alt="Enocta" width="415" height="255">
-  <p class="count"><span class="n">06</span> <span>briefs</span></p>
+  <p class="count"><span class="n">07</span> <span>briefs</span></p>
 </header>
 <main class="showcase">
   <h1 class="sr">Enocta AI · Briefs</h1>
   <ul class="index" role="list">
     <li class="item" role="listitem" style="--i:0">
-      <a class="row is-active" href="karar-4b/" aria-current="true" aria-describedby="sum-karar-4b" data-slug="karar-4b">
+      <a class="row is-active" href="eci/" aria-current="true" aria-describedby="sum-eci" data-slug="eci">
         <span class="idx">01</span>
+        <span class="title">Enocta ECI</span>
+        <span class="sr">Running 82 accounts with one manager</span>
+        <span class="tag">ENOCTA CUSTOMER INTELLIGENCE · ECI</span>
+      </a>
+      <a class="panel is-active intro" href="eci/" tabindex="-1" aria-hidden="true" data-slug="eci">
+        <span class="frame">
+          <video muted loop playsinline preload="none" poster="assets/cards/eci.jpg" width="960" height="540">
+            <source src="assets/previews/eci.mp4" type="video/mp4">
+          </video>
+        </span>
+        <span class="cap">
+          <span class="full">Running 82 accounts with one manager</span>
+          <span class="summary" id="sum-eci">ECI plans the week, the manager makes the calls.</span>
+          <span class="meta">
+            <span class="filmlen"><span>Film</span> <span class="dur">1:14</span></span>
+            <span class="open"><span>Open brief</span> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+          </span>
+        </span>
+      </a>
+    </li>
+    <li class="item" role="listitem" style="--i:1">
+      <a class="row" href="karar-4b/" aria-describedby="sum-karar-4b" data-slug="karar-4b">
+        <span class="idx">02</span>
         <span class="title"><span class="nb">Karar-4B</span></span>
         <span class="sr">Karar-4B: an open decision model for Turkish</span>
         <span class="tag">OPEN MODEL · TURKISH DECISIONS</span>
       </a>
-      <a class="panel is-active intro" href="karar-4b/" tabindex="-1" aria-hidden="true" data-slug="karar-4b">
+      <a class="panel" href="karar-4b/" tabindex="-1" aria-hidden="true" data-slug="karar-4b">
         <span class="frame">
           <video muted loop playsinline preload="none" poster="assets/cards/karar-4b.jpg" width="960" height="540">
             <source src="assets/previews/karar-4b.mp4" type="video/mp4">
@@ -216,9 +243,9 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:1">
+    <li class="item" role="listitem" style="--i:2">
       <a class="row" href="freya-tts/" aria-describedby="sum-freya-tts" data-slug="freya-tts">
-        <span class="idx">02</span>
+        <span class="idx">03</span>
         <span class="title">Enocta Voices</span>
         <span class="sr">Fine-tuning FreyaTTS on Enocta voices</span>
         <span class="tag">SPEECH SYNTHESIS · FINE-TUNING</span>
@@ -239,16 +266,16 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:2">
+    <li class="item" role="listitem" style="--i:3">
       <a class="row" href="jev-ats/" aria-describedby="sum-jev-ats" data-slug="jev-ats">
-        <span class="idx">03</span>
+        <span class="idx">04</span>
         <span class="title">Typed Resume Screening</span>
         <span class="sr">Screening resumes with typed answers</span>
         <span class="tag">TYPED JUDGMENT · RESUME SCREENING</span>
       </a>
       <a class="panel" href="jev-ats/" tabindex="-1" aria-hidden="true" data-slug="jev-ats">
         <span class="frame">
-          <video muted loop playsinline preload="none" poster="assets/cards/jev-ats.jpg" width="960" height="540">
+          <video muted loop playsinline preload="none" data-poster="assets/cards/jev-ats.jpg" width="960" height="540">
             <source src="assets/previews/jev-ats.mp4" type="video/mp4">
           </video>
         </span>
@@ -262,9 +289,9 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:3">
+    <li class="item" role="listitem" style="--i:4">
       <a class="row" href="shorts/" aria-describedby="sum-shorts" data-slug="shorts">
-        <span class="idx">04</span>
+        <span class="idx">05</span>
         <span class="title">Enocta Shorts</span>
         <span class="sr">Turning courses into vertical shorts</span>
         <span class="tag">AGENTIC VIDEO REFRAMING · SHORTS</span>
@@ -285,9 +312,9 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:4">
+    <li class="item" role="listitem" style="--i:5">
       <a class="row" href="turkish-ai/" aria-describedby="sum-turkish-ai" data-slug="turkish-ai">
-        <span class="idx">05</span>
+        <span class="idx">06</span>
         <span class="title">Distilled LLM for <span class="nb">Role-Play</span></span>
         <span class="sr">Distilling a Turkish role-play model</span>
         <span class="tag">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
@@ -308,9 +335,9 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
         </span>
       </a>
     </li>
-    <li class="item" role="listitem" style="--i:5">
+    <li class="item" role="listitem" style="--i:6">
       <a class="row" href="guardrails/" aria-describedby="sum-guardrails" data-slug="guardrails">
-        <span class="idx">06</span>
+        <span class="idx">07</span>
         <span class="title">Production Guardrails</span>
         <span class="sr">Production Guardrails Brief</span>
         <span class="tag">Zero-trust AI</span>
@@ -336,41 +363,11 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 <div class="marquee" aria-hidden="true">
   <div class="track">
 <div class="half">
-<span class="mi n">Karar-4B</span>
+<span class="mi n">Enocta ECI</span>
 <i class="dot"></i>
-<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
+<span class="mi t">ENOCTA CUSTOMER INTELLIGENCE · ECI</span>
 <i class="dot"></i>
-<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
-<i class="dot"></i>
-<span class="mi n">Enocta Voices</span>
-<i class="dot"></i>
-<span class="mi t">SPEECH SYNTHESIS · FINE-TUNING</span>
-<i class="dot"></i>
-<span class="mi">One model, many voices.</span>
-<i class="dot"></i>
-<span class="mi n">Typed Resume Screening</span>
-<i class="dot"></i>
-<span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
-<i class="dot"></i>
-<span class="mi">Score each resume alone, compare them together.</span>
-<i class="dot"></i>
-<span class="mi n">Enocta Shorts</span>
-<i class="dot"></i>
-<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
-<i class="dot"></i>
-<span class="mi">The model directs, code does the filming.</span>
-<i class="dot"></i>
-<span class="mi n">Distilled LLM for Role-Play</span>
-<i class="dot"></i>
-<span class="mi t">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
-<i class="dot"></i>
-<span class="mi">Better data, not a bigger model.</span>
-<i class="dot"></i>
-<span class="mi n">Production Guardrails</span>
-<i class="dot"></i>
-<span class="mi t">Zero-trust AI</span>
-<i class="dot"></i>
-<span class="mi">Eight guardrails. Seven test angles. All passing.</span>
+<span class="mi">ECI plans the week, the manager makes the calls.</span>
 <i class="dot"></i>
 <span class="mi n">Karar-4B</span>
 <i class="dot"></i>
@@ -402,49 +399,49 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 <i class="dot"></i>
 <span class="mi">Better data, not a bigger model.</span>
 <i class="dot"></i>
-<span class="mi n">Production Guardrails</span>
+<span class="mi n">Enocta ECI</span>
 <i class="dot"></i>
-<span class="mi t">Zero-trust AI</span>
+<span class="mi t">ENOCTA CUSTOMER INTELLIGENCE · ECI</span>
 <i class="dot"></i>
-<span class="mi">Eight guardrails. Seven test angles. All passing.</span>
+<span class="mi">ECI plans the week, the manager makes the calls.</span>
+<i class="dot"></i>
+<span class="mi n">Karar-4B</span>
+<i class="dot"></i>
+<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
+<i class="dot"></i>
+<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
+<i class="dot"></i>
+<span class="mi n">Enocta Voices</span>
+<i class="dot"></i>
+<span class="mi t">SPEECH SYNTHESIS · FINE-TUNING</span>
+<i class="dot"></i>
+<span class="mi">One model, many voices.</span>
+<i class="dot"></i>
+<span class="mi n">Typed Resume Screening</span>
+<i class="dot"></i>
+<span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
+<i class="dot"></i>
+<span class="mi">Score each resume alone, compare them together.</span>
+<i class="dot"></i>
+<span class="mi n">Enocta Shorts</span>
+<i class="dot"></i>
+<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
+<i class="dot"></i>
+<span class="mi">The model directs, code does the filming.</span>
+<i class="dot"></i>
+<span class="mi n">Distilled LLM for Role-Play</span>
+<i class="dot"></i>
+<span class="mi t">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
+<i class="dot"></i>
+<span class="mi">Better data, not a bigger model.</span>
 <i class="dot"></i>
 </div>
 <div class="half">
-<span class="mi n">Karar-4B</span>
+<span class="mi n">Enocta ECI</span>
 <i class="dot"></i>
-<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
+<span class="mi t">ENOCTA CUSTOMER INTELLIGENCE · ECI</span>
 <i class="dot"></i>
-<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
-<i class="dot"></i>
-<span class="mi n">Enocta Voices</span>
-<i class="dot"></i>
-<span class="mi t">SPEECH SYNTHESIS · FINE-TUNING</span>
-<i class="dot"></i>
-<span class="mi">One model, many voices.</span>
-<i class="dot"></i>
-<span class="mi n">Typed Resume Screening</span>
-<i class="dot"></i>
-<span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
-<i class="dot"></i>
-<span class="mi">Score each resume alone, compare them together.</span>
-<i class="dot"></i>
-<span class="mi n">Enocta Shorts</span>
-<i class="dot"></i>
-<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
-<i class="dot"></i>
-<span class="mi">The model directs, code does the filming.</span>
-<i class="dot"></i>
-<span class="mi n">Distilled LLM for Role-Play</span>
-<i class="dot"></i>
-<span class="mi t">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
-<i class="dot"></i>
-<span class="mi">Better data, not a bigger model.</span>
-<i class="dot"></i>
-<span class="mi n">Production Guardrails</span>
-<i class="dot"></i>
-<span class="mi t">Zero-trust AI</span>
-<i class="dot"></i>
-<span class="mi">Eight guardrails. Seven test angles. All passing.</span>
+<span class="mi">ECI plans the week, the manager makes the calls.</span>
 <i class="dot"></i>
 <span class="mi n">Karar-4B</span>
 <i class="dot"></i>
@@ -476,11 +473,41 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
 <i class="dot"></i>
 <span class="mi">Better data, not a bigger model.</span>
 <i class="dot"></i>
-<span class="mi n">Production Guardrails</span>
+<span class="mi n">Enocta ECI</span>
 <i class="dot"></i>
-<span class="mi t">Zero-trust AI</span>
+<span class="mi t">ENOCTA CUSTOMER INTELLIGENCE · ECI</span>
 <i class="dot"></i>
-<span class="mi">Eight guardrails. Seven test angles. All passing.</span>
+<span class="mi">ECI plans the week, the manager makes the calls.</span>
+<i class="dot"></i>
+<span class="mi n">Karar-4B</span>
+<i class="dot"></i>
+<span class="mi t">OPEN MODEL · TURKISH DECISIONS</span>
+<i class="dot"></i>
+<span class="mi">We fine-tuned an open 4.5B model to make decisions in Turkish</span>
+<i class="dot"></i>
+<span class="mi n">Enocta Voices</span>
+<i class="dot"></i>
+<span class="mi t">SPEECH SYNTHESIS · FINE-TUNING</span>
+<i class="dot"></i>
+<span class="mi">One model, many voices.</span>
+<i class="dot"></i>
+<span class="mi n">Typed Resume Screening</span>
+<i class="dot"></i>
+<span class="mi t">TYPED JUDGMENT · RESUME SCREENING</span>
+<i class="dot"></i>
+<span class="mi">Score each resume alone, compare them together.</span>
+<i class="dot"></i>
+<span class="mi n">Enocta Shorts</span>
+<i class="dot"></i>
+<span class="mi t">AGENTIC VIDEO REFRAMING · SHORTS</span>
+<i class="dot"></i>
+<span class="mi">The model directs, code does the filming.</span>
+<i class="dot"></i>
+<span class="mi n">Distilled LLM for Role-Play</span>
+<i class="dot"></i>
+<span class="mi t">KNOWLEDGE DISTILLATION · ROLE-PLAY</span>
+<i class="dot"></i>
+<span class="mi">Better data, not a bigger model.</span>
 <i class="dot"></i>
 </div>
   </div>
@@ -533,7 +560,7 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
     r.addEventListener("focus", function () {
       if (!stage.matches) return;
       stopAuto(); manualUntil = now() + 1200; setActive(i);
-      if (scrollMode) r.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+      if (scrollMode) { keyUntil = now() + 1200; scrollToRow(i, true); }
     });
   });
   var ix = d.querySelector(".index");
@@ -550,26 +577,33 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
     e.preventDefault(); stopAuto();
     var next = (cur + (e.key === "ArrowDown" ? 1 : -1) + rows.length) % rows.length;
     manualUntil = now() + 1200;
-    if (scrollMode && stage.matches) { rows[next].focus({ preventScroll: true }); rows[next].scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" }); }
+    if (scrollMode && stage.matches) { keyUntil = now() + 1200; rows[next].focus({ preventScroll: true }); scrollToRow(next, true); }
     else rows[next].focus();
     setActive(next);
   });
 
-  // 7+ briefs: the row nearest the middle of the viewport becomes active while the page scrolls
-  if (scrollMode && "IntersectionObserver" in window) {
-    var armed = scrollY > 0, pickTimer = 0; // the newest brief stays active on load; the first observer callback is not a scroll
-    var pick = function () {
-      if (!stage.matches) return;
-      var best = -1, bd = 1e9, mid = innerHeight / 2;
-      rows.forEach(function (r, i) { var b = r.getBoundingClientRect(), dd = Math.abs(b.top + b.height / 2 - mid); if (dd < bd) { bd = dd; best = i; } });
-      if (best >= 0) setActive(best);
+  // 7+ briefs: proportional mapping. Every row owns an equal share of the scroll range: active = round(scrollY / maxScroll * (n - 1)).
+  // If the page does not scroll at all, hover, focus and the arrow keys alone drive the active row (row 1 on load).
+  function maxScroll() { return Math.max(0, d.documentElement.scrollHeight - innerHeight); }
+  function pick() {
+    var m = maxScroll();
+    if (!stage.matches || m <= 1) return;
+    setActive(Math.max(0, Math.min(rows.length - 1, Math.round(Math.min(1, scrollY / m) * (rows.length - 1)))));
+  }
+  function scrollToRow(i, smooth) { // the scroll position that makes row i the proportional pick
+    var m = maxScroll(); if (m <= 1 || !stage.matches) return;
+    scrollTo({ top: Math.round(m * i / (rows.length - 1)), behavior: smooth && !reduce ? "smooth" : "auto" });
+  }
+  var keyUntil = 0, pickTimer = 0;
+  if (scrollMode) {
+    var onScroll = function () {
+      // a scroll made by a key or focus change is ours; the scroll position is read again once it is over
+      if (now() < keyUntil) { clearTimeout(pickTimer); pickTimer = setTimeout(pick, keyUntil - now() + 40); return; }
+      pick();
     };
-    var mid = new IntersectionObserver(function () {
-      if (!armed) { armed = true; return; }
-      // a pointer / keyboard choice wins for a moment; the scroll position is re-read once that moment is over
-      clearTimeout(pickTimer); pickTimer = setTimeout(pick, Math.max(0, manualUntil - now()) + 40);
-    }, { rootMargin: "-46% 0px -46% 0px", threshold: 0 });
-    rows.forEach(function (r) { mid.observe(r); });
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", pick);
+    if (scrollY > 0) pick(); // reloaded part-way down
   }
 
   // shared-element view transition: the clicked brief's frame carries the same name as the film on the brief page
@@ -586,7 +620,7 @@ body[data-tier="b"] .title, body[data-tier="c"] .title { display: -webkit-box; -
       var from = window.navigation && navigation.activation && navigation.activation.from && navigation.activation.from.url;
       if (!from) return;
       var path = new URL(from).pathname;
-      rows.forEach(function (r, i) { if (path.indexOf("/" + r.getAttribute("data-slug") + "/") >= 0) { setActive(i); stopAuto(); frames[i].style.viewTransitionName = "brief-film"; if (scrollMode) r.scrollIntoView({ block: "center" }); } });
+      rows.forEach(function (r, i) { if (path.indexOf("/" + r.getAttribute("data-slug") + "/") >= 0) { setActive(i); stopAuto(); frames[i].style.viewTransitionName = "brief-film"; if (scrollMode) scrollToRow(i, false); } });
     } catch (e) {}
   });
 

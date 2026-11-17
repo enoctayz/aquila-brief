@@ -1,0 +1,208 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - link "All briefs" [ref=e6] [cursor=pointer]:
+          - /url: ../
+        - generic [ref=e9]:
+          - img "Enocta" [ref=e10]
+          - generic [ref=e11]: TECHNICAL BRIEF
+        - paragraph [ref=e12]: ENOCTA CUSTOMER INTELLIGENCE · ECI
+        - heading "Running 82 accounts with one manager" [level=1] [ref=e13]:
+          - text: Running 82 accounts
+          - generic [ref=e14]: with one manager
+        - paragraph [ref=e15]: ECI checks every account's health, plans the week and writes the reports.
+        - list [ref=e16]:
+          - listitem [ref=e17]:
+            - generic [ref=e18]: portfolio
+            - generic [ref=e19]: 82 companies
+          - listitem [ref=e20]:
+            - generic [ref=e22]: status
+            - generic [ref=e23]: live
+        - region "ECI plans the week, the manager makes the calls." [ref=e24]:
+          - paragraph [ref=e25]: Key finding
+          - heading "ECI plans the week, the manager makes the calls." [level=2] [ref=e26]
+          - paragraph [ref=e27]: A weekly brew proposes who to contact.
+          - paragraph [ref=e28]: The manager decides.
+          - table "Key finding" [ref=e29]:
+            - caption [ref=e30]: Key finding
+            - rowgroup [ref=e31]:
+              - row [ref=e32]:
+                - columnheader "Problem"
+                - columnheader "Fix" [ref=e33]
+                - columnheader "Effect"
+            - rowgroup [ref=e34]:
+              - row [ref=e35]:
+                - rowheader "Too many accounts" [ref=e36]
+                - cell "Weekly brew" [ref=e37]
+                - cell "10 contacts a week" [ref=e38]:
+                  - generic [ref=e39]: "10"
+                  - generic [ref=e40]: contacts a week
+              - row [ref=e41]:
+                - rowheader "Hidden risk" [ref=e42]
+                - cell "Monthly health bands" [ref=e43]
+                - cell "17 critical" [ref=e44]:
+                  - generic [ref=e45]: "17"
+                  - generic [ref=e46]: critical
+    - main [ref=e47]:
+      - region "Film" [ref=e48]:
+        - heading "Film" [level=2] [ref=e49]
+        - generic [ref=e50]:
+          - button "Play the film" [ref=e51] [cursor=pointer]
+          - generic [ref=e55]: Your browser cannot play this video.
+        - paragraph [ref=e56]: Film ·1:14
+      - region "01 Pipeline" [ref=e57]:
+        - heading "01 Pipeline" [level=2] [ref=e58]:
+          - generic [ref=e59]: "01"
+          - text: Pipeline
+        - list [ref=e60]:
+          - listitem [ref=e61]:
+            - generic [ref=e62]:
+              - generic [ref=e63]: 82 companies
+              - generic [ref=e64]: Account data
+            - generic [ref=e67]: to
+          - listitem [ref=e68]:
+            - generic [ref=e69]:
+              - generic [ref=e70]: health score
+              - generic [ref=e71]: Health check
+            - generic [ref=e74]: to
+          - listitem [ref=e75]:
+            - generic [ref=e76]:
+              - generic [ref=e77]: agent · weekly
+              - generic [ref=e78]: Weekly brew
+            - generic [ref=e81]: to
+          - listitem [ref=e82]:
+            - generic [ref=e83]:
+              - generic [ref=e84]: Mon to Fri
+              - generic [ref=e85]: Kanban board
+            - generic [ref=e88]: to
+          - listitem [ref=e89]:
+            - generic [ref=e90]:
+              - generic [ref=e91]: PDF · Excel · mail
+              - generic [ref=e92]: Outputs
+        - list [ref=e93]:
+          - listitem [ref=e94]: four health bands
+          - listitem [ref=e95]: the manager edits the plan
+          - listitem [ref=e96]: two linked mail tools
+      - region "02 Results" [ref=e97]:
+        - heading "02 Results" [level=2] [ref=e98]:
+          - generic [ref=e99]: "02"
+          - text: Results
+        - generic [ref=e100]:
+          - generic [ref=e101]:
+            - list [ref=e102]:
+              - listitem [ref=e103]: Good
+              - listitem [ref=e105]: Watch
+              - listitem [ref=e107]: Critical
+              - listitem [ref=e109]: To assess
+            - list "Accounts per health band, by month" [ref=e111]:
+              - listitem [ref=e112]:
+                - generic [ref=e113]: July
+                - generic [ref=e114]:
+                  - generic [ref=e115]:
+                    - generic [ref=e116]: "20"
+                    - generic [ref=e117]: Good
+                  - generic [ref=e118]:
+                    - generic [ref=e119]: "22"
+                    - generic [ref=e120]: Watch
+                  - generic [ref=e121]:
+                    - generic [ref=e122]: "28"
+                    - generic [ref=e123]: Critical
+                  - generic [ref=e124]:
+                    - generic [ref=e125]: "14"
+                    - generic [ref=e126]: To assess
+              - listitem [ref=e127]:
+                - generic [ref=e128]: August
+                - generic [ref=e129]:
+                  - generic [ref=e130]:
+                    - generic [ref=e131]: "25"
+                    - generic [ref=e132]: Good
+                  - generic [ref=e133]:
+                    - generic [ref=e134]: "21"
+                    - generic [ref=e135]: Watch
+                  - generic [ref=e136]:
+                    - generic [ref=e137]: "24"
+                    - generic [ref=e138]: Critical
+                  - generic [ref=e139]:
+                    - generic [ref=e140]: "14"
+                    - generic [ref=e141]: To assess
+              - listitem [ref=e142]:
+                - generic [ref=e143]: September
+                - generic [ref=e144]:
+                  - generic [ref=e145]:
+                    - generic [ref=e146]: "28"
+                    - generic [ref=e147]: Good
+                  - generic [ref=e148]:
+                    - generic [ref=e149]: "20"
+                    - generic [ref=e150]: Watch
+                  - generic [ref=e151]:
+                    - generic [ref=e152]: "18"
+                    - generic [ref=e153]: Critical
+                  - generic [ref=e154]:
+                    - generic [ref=e155]: "17"
+                    - generic [ref=e156]: To assess
+              - listitem [ref=e157]:
+                - paragraph [ref=e158]: October 2026 · 82 companies
+                - generic [ref=e159]: October
+                - generic [ref=e160]:
+                  - generic [ref=e161]:
+                    - generic [ref=e162]: "28"
+                    - generic [ref=e163]: Good
+                  - generic [ref=e164]:
+                    - generic [ref=e165]: "20"
+                    - generic [ref=e166]: Watch
+                  - generic [ref=e167]:
+                    - generic [ref=e168]: "17"
+                    - generic [ref=e169]: Critical
+                  - generic [ref=e170]:
+                    - generic [ref=e171]: "17"
+                    - generic [ref=e172]: To assess
+            - paragraph [ref=e173]: Accounts per health band. Critical fell from 28 to 17 since July;
+            - paragraph [ref=e174]: the cause is untested.
+          - list [ref=e175]:
+            - listitem [ref=e176]:
+              - generic [ref=e177]:
+                - text: "82"
+                - generic [ref=e180]: to
+                - text: "1"
+              - generic [ref=e181]:
+                - text: Companies
+                - generic [ref=e184]: to
+                - text: manager
+              - generic [ref=e185]: one console
+            - listitem [ref=e186]:
+              - generic [ref=e187]: 9 / 10
+              - generic [ref=e188]: Contacts done
+              - generic [ref=e189]: this week
+            - listitem [ref=e190]:
+              - generic [ref=e191]: "8"
+              - generic [ref=e192]: Expired contracts
+              - generic [ref=e193]: flagged
+      - region "Built for the team inside the console" [ref=e194]:
+        - heading "Built for the team inside the console" [level=2] [ref=e195]:
+          - text: Built for the team
+          - generic [ref=e196]: inside the console
+        - list [ref=e197]:
+          - listitem [ref=e198]:
+            - generic [ref=e206]: Done or not done
+            - generic [ref=e207]: tracked per contact
+          - listitem [ref=e208]:
+            - generic [ref=e213]: Notes
+            - generic [ref=e214]: left for other managers
+          - listitem [ref=e215]:
+            - generic [ref=e220]: Forum
+            - generic [ref=e221]: one place for the team
+      - region "What's next" [ref=e222]:
+        - heading "What's next" [level=2] [ref=e223]
+        - list [ref=e224]:
+          - listitem [ref=e225]:
+            - generic [ref=e226]: Onboard managers
+            - generic [ref=e227]: live with one today
+          - listitem [ref=e228]:
+            - generic [ref=e229]: Measure time saved
+            - generic [ref=e230]: hours per week
+          - listitem [ref=e231]:
+            - generic [ref=e232]: Tune thresholds
+            - generic [ref=e233]: with manager feedback
